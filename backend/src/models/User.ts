@@ -27,7 +27,7 @@ const UserSchema: Schema = new Schema(
       transform: (_doc, ret: any) => {
         delete ret._id
         delete ret.__v
-        delete ret.password
+        delete ret.password_hash
         return ret
       },
     },
