@@ -7,6 +7,7 @@ import { Video } from '../models/Video.js'
 import { MostRead } from '../models/MostRead.js'
 import { Weather } from '../models/Weather.js'
 import { ExchangeRate } from '../models/ExchangeRate.js'
+import { getNextId } from '../utils/counter.js'
 
 async function seed() {
   await connectDb()
@@ -20,45 +21,58 @@ async function seed() {
 
   const categoryCount = await Category.countDocuments()
   if (!categoryCount) {
-    await Category.insertMany([
+    console.log('Seeding categories...')
+    const categories = [
       { name: 'Afghanistan', slug: 'afghanistan', description: 'Local updates and reports.' },
       { name: 'World', slug: 'world', description: 'Global news and events.' },
       { name: 'Economy', slug: 'economy', description: 'Business and financial updates.' },
       { name: 'Culture', slug: 'culture', description: 'Arts, media, and culture.' },
-    ])
+    ]
+    for (const cat of categories) {
+      const id = await getNextId('categories')
+      await Category.create({ ...cat, id })
+    }
   }
 
   const postCount = await Post.countDocuments()
   if (!postCount) {
-    await Post.insertMany([
+    console.log('Seeding posts...')
+    const posts = [
       {
         title: 'Welcome to Dabistan',
         slug: 'welcome-to-dabistan',
         content: 'This is your first post. Edit or delete it from the dashboard.',
         excerpt: 'This is your first post.',
         category: 'afghanistan',
-        featuredImage: 'https://placehold.co/1200x630',
+        section_slug: 'news',
+        image: 'https://placehold.co/1200x630',
         status: 'published',
-        author: admin.id,
-        publishedAt: new Date(),
+        author: admin.name,
+        published_at: new Date(),
       },
       {
         title: 'Editorial Workflow Overview',
-        slug: 'editorial-workflow-overview',
+        slug: ' editorial-workflow-overview',
         content: 'Use drafts to collaborate and publish once approved.',
         excerpt: 'Best practices for editors and admins.',
         category: 'culture',
-        featuredImage: 'https://placehold.co/1200x630',
+        section_slug: 'articles',
+        image: 'https://placehold.co/1200x630',
         status: 'draft',
-        author: admin.id,
-        publishedAt: null,
+        author: admin.name,
+        published_at: null,
       },
-    ])
+    ]
+    for (const post of posts) {
+      const id = await getNextId('posts')
+      await Post.create({ ...post, id })
+    }
   }
 
   const videoCount = await Video.countDocuments()
   if (!videoCount) {
-    await Video.insertMany([
+    console.log('Seeding videos...')
+    const videos = [
       {
         title: 'Dabistan Weekly Briefing',
         url: 'https://example.com/videos/weekly-briefing',
@@ -66,7 +80,7 @@ async function seed() {
         category: 'world',
         duration: '06:20',
         description: 'Highlights from the week.',
-        publishedAt: new Date(),
+        published_at: new Date(),
       },
       {
         title: 'Afghanistan Economy',
@@ -75,45 +89,64 @@ async function seed() {
         category: 'economy',
         duration: '04:10',
         description: 'Economic update and insights.',
-        publishedAt: new Date(),
+        published_at: new Date(),
       },
-    ])
+    ]
+    for (const video of videos) {
+      const id = await getNextId('videos')
+      await Video.create({ ...video, id })
+    }
   }
 
   const mostReadCount = await MostRead.countDocuments()
   if (!mostReadCount) {
-    await MostRead.insertMany([
+    console.log('Seeding most read...')
+    const mostRead = [
       {
         title: 'Top Story: Regional Updates',
         slug: 'top-story-regional-updates',
         category: 'afghanistan',
         rank: 1,
-        publishedAt: new Date(),
+        published_at: new Date(),
       },
       {
         title: 'Global Markets Snapshot',
         slug: 'global-markets-snapshot',
         category: 'economy',
         rank: 2,
-        publishedAt: new Date(),
+        published_at: new Date(),
       },
-    ])
+    ]
+    for (const mr of mostRead) {
+      const id = await getNextId('most-read')
+      await MostRead.create({ ...mr, id })
+    }
   }
 
   const weatherCount = await Weather.countDocuments()
   if (!weatherCount) {
-    await Weather.insertMany([
-      { location: 'Kabul', temperature: 18, condition: 'Partly cloudy' },
-      { location: 'Herat', temperature: 21, condition: 'Clear' },
-    ])
+    console.log('Seeding weather...')
+    const weatherData = [
+      { location: 'Kabul', temperature: 18, condition: 'Partly cloudy', icon: 'cloudy' },
+      { location: 'Herat', temperature: 21, condition: 'Clear', icon: 'sunny' },
+    ]
+    for (const w of weatherData) {
+      const id = await getNextId('weather')
+      await Weather.create({ ...w, id })
+    }
   }
 
   const exchangeCount = await ExchangeRate.countDocuments()
   if (!exchangeCount) {
-    await ExchangeRate.insertMany([
-      { base: 'AFN', currency: 'USD', rate: 0.014 },
-      { base: 'AFN', currency: 'EUR', rate: 0.013 },
-    ])
+    console.log('Seeding exchange rates...')
+    const exchangeRates = [
+      { base: 'AFN', currency: 'USD', rate: 0.014, flag: '🇺🇸' },
+      { base: 'AFN', currency: 'EUR', rate: 0.013, flag: '🇪🇺' },
+    ]
+    for (const er of exchangeRates) {
+      const id = await getNextId('exchange-rates')
+      await ExchangeRate.create({ ...er, id })
+    }
   }
 }
 
@@ -123,7 +156,7 @@ seed()
     console.log('Seed complete')
   })
   .catch(async (error) => {
-    console.error(error)
+    console.error('Seed error:', error)
     await disconnectDb()
     process.exitCode = 1
   })

@@ -7,7 +7,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "seed": "tsx src/db/seed.js",
+    "seed": "tsx src/db/seed.ts",
     "create-admin": "tsx src/utils/seedAdmin.ts"
   },
   "dependencies": {

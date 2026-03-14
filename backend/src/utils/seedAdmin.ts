@@ -12,6 +12,7 @@ export async function ensureAdminUser() {
   const normalizedEmail = env.adminEmail.trim().toLowerCase()
   const existing = await User.findOne({ email: normalizedEmail })
   if (existing) {
+    console.log('Admin user already exists:', normalizedEmail)
     return
   }
 
@@ -25,6 +26,5 @@ export async function ensureAdminUser() {
     role: 'admin',
   })
 
-  console.log('Seeded default admin user')
+  console.log('Seeded default admin user:', normalizedEmail)
 }
-
