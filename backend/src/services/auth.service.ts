@@ -22,14 +22,15 @@ export async function authenticateUser({ email, password }: any): Promise<any> {
 
   await usersService.updateLastLogin(user.id)
 
-  const token = signToken({ id: user.id, email: user.email, role: user.role })
+  const roleSlug = (user.role as any)?.slug || user.role
+  const token = signToken({ id: user.id, email: user.email, role: roleSlug })
 
   return {
     token,
     user: {
       id: user.id,
       email: user.email,
-      role: user.role,
+      role: roleSlug,
     },
   }
 }

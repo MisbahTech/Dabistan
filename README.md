@@ -10,27 +10,78 @@ Professional admin/editor portal with JWT auth, role-based access, posts managem
 - Auth: JWT + bcryptjs
 - Uploads: Multer
 
-## Quick Start
+## How to Run Guide
 
-### Backend
+Follow these steps to set up and run the Dabistan Admin Portal locally.
 
-1. Create `backend/.env` from `backend/.env.example`.
-2. Start MongoDB locally.
-3. Install dependencies:
-   - `cd backend`
-   - `npm install`
-4. Run the server:
-   - `npm run dev`
+### 1. Prerequisites
 
-The server seeds a default admin user if `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set.
+- **Node.js**: v18 or higher recommended.
+- **MongoDB**: A local instance or a MongoDB Atlas connection string.
+- **Package Manager**: `npm` (comes with Node.js).
 
-### Frontend
+### 2. Database Setup
 
-1. Create `.env` from `.env.example` if needed.
-2. Install dependencies:
-   - `npm install`
-3. Run the app:
-   - `npm run dev`
+You can run MongoDB locally or using Docker.
+
+#### Option A: Using Docker (Recommended)
+1.  Navigate to the backend directory: `cd backend`
+2.  Ensure your `.env` is configured (see Backend Setup below).
+3.  Start the database:
+    ```bash
+    docker-compose up -d
+    ```
+    This will start a MongoDB container named `local-mongo` on the port specified by `MONGO_PORT` in your `.env`.
+
+#### Option B: Local Installation
+1.  Ensure **MongoDB** is running on your system (default port `27017`).
+2.  If using a local instance, the URI in your backend `.env` will likely be `mongodb://localhost:27017/dabistan`.
+3.  You don't need to manually create the database; Mongoose will create it on the first connection.
+
+### 3. Backend Setup
+
+1.  Navigate to the backend directory:
+    ```bash
+    cd backend
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Configure Environment Variables:
+    - Copy the example environment file: `cp .env.example .env`
+    - Open `.env` and fill in the required values (especially `MONGODB_URI`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD`).
+4.  (Optional) Seed Initial Data:
+    - The server automatically seeds the admin user on startup if it doesn't exist.
+    - To manually create an admin: `npm run create-admin`
+5.  Run the Development Server:
+    ```bash
+    npm run dev
+    ```
+    The backend will start at `http://localhost:5000` (or the port specified in `.env`).
+
+### 4. Frontend Setup
+
+1.  Navigate to the root directory (where the frontend lives):
+    ```bash
+    cd ..
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Configure Environment Variables:
+    - Ensure `.env` exists if you need to point to a custom API URL (default is `http://localhost:5000/api`).
+4.  Run the Development Server:
+    ```bash
+    npm run dev
+    ```
+    The frontend will be available at `http://localhost:5173`.
+
+### 5. Accessing the Portal
+
+- **URL**: `http://localhost:5173/login`
+- **Default Credentials**: Use the `ADMIN_EMAIL` and `ADMIN_PASSWORD` you defined in the backend `.env` file.
 
 ## Key Routes
 

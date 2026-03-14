@@ -18,12 +18,16 @@ import { contentRouter } from './content.routes.js'
 import { uploadsRouter } from './uploads.routes.js'
 import { publicRouter } from './public.routes.js'
 import { videosRouter } from './videos.routes.js'
+import { rolesRouter } from './roles.routes.js'
+import { permissionsRouter } from './permissions.routes.js'
 
 export const apiRouter = Router()
 
 apiRouter.use('/public', publicRouter)
 apiRouter.use('/auth', authRouter)
 apiRouter.use('/users', usersRouter)
+apiRouter.use('/roles', rolesRouter)
+apiRouter.use('/permissions', permissionsRouter)
 apiRouter.use('/posts', postsRouter)
 apiRouter.use('/uploads', uploadsRouter)
 apiRouter.use('/categories', categoriesRouter)

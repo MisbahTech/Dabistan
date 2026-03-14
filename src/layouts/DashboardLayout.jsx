@@ -11,6 +11,8 @@ const navItems = [
   { to: '/weather', label: 'Weather Cache', roles: ['admin', 'editor'] },
   { to: '/exchange-rates', label: 'Exchange Rates', roles: ['admin', 'editor'] },
   { to: '/users', label: 'Users', roles: ['admin'] },
+  { to: '/roles', label: 'Roles', roles: ['admin'] },
+  { to: '/permissions', label: 'Permissions', roles: ['admin'] },
 ]
 
 export default function DashboardLayout({ children }) {
@@ -28,7 +30,10 @@ export default function DashboardLayout({ children }) {
         </div>
         <nav className="sidebar-nav">
           {navItems
-            .filter((item) => item.roles.includes(user?.role))
+            .filter((item) => {
+              const userRole = user?.role?.slug || user?.role
+              return item.roles.includes(userRole)
+            })
             .map((item) => (
               <NavLink
                 key={item.to}
@@ -43,7 +48,7 @@ export default function DashboardLayout({ children }) {
       <div className="main-area">
         <header className="topbar">
           <div>
-            <h2>{user?.role === 'admin' ? 'Admin Dashboard' : 'Editor Dashboard'}</h2>
+            <h2>{user?.role?.name || 'Dashboard'}</h2>
             <p>{user?.email}</p>
           </div>
           <button className="btn ghost" type="button" onClick={logout}>

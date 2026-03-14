@@ -6,7 +6,9 @@ import {
   useUsersQuery,
 } from '../services/usersApi'
 
-const emptyForm = { name: '', email: '', password: '' }
+import { useRolesQuery } from '../services/rolesApi'
+
+const emptyForm = { name: '', email: '', password: '', role: '' }
 
 export default function UsersPage() {
   const [form, setForm] = useState(emptyForm)
@@ -14,12 +16,14 @@ export default function UsersPage() {
   const [error, setError] = useState('')
 
   const usersQuery = useUsersQuery()
+  const rolesQuery = useRolesQuery()
   const createUser = useCreateUserMutation()
   const updateUser = useUpdateUserMutation()
   const deleteUser = useDeleteUserMutation()
 
-  const users = usersQuery.data ?? []
-  const isLoading = usersQuery.isLoading
+  const users = usersQuery.data?.data ?? (Array.isArray(usersQuery.data) ? usersQuery.data : [])
+  const roles = rolesQuery.data?.data ?? (Array.isArray(rolesQuery.data) ? rolesQuery.data : [])
+  const isLoading = usersQuery.isLoading || rolesQuery.isLoading
   const isSaving = createUser.isPending || updateUser.isPending || deleteUser.isPending
 
   const handleSubmit = async (event) => {
@@ -40,11 +44,16 @@ export default function UsersPage() {
 
   const handleEdit = (user) => {
     setEditingId(user.id)
-    setForm({ name: user.name ?? '', email: user.email ?? '', password: '' })
+    setForm({
+      name: user.name ?? '',
+      email: user.email ?? '',
+      password: '',
+      role: user.role?.slug || user.role || ''
+    })
   }
 
   const handleDelete = async (userId) => {
-    if (!window.confirm('Delete this editor?')) {
+    if (!window.confirm('Delete this user?')) {
       return
     }
     setError('')
@@ -60,8 +69,8 @@ export default function UsersPage() {
       <div className="card">
         <div className="card-header">
           <div>
-            <h3>{editingId ? 'Edit Editor' : 'Create Editor'}</h3>
-            <p className="muted">Admins can create and manage editor accounts only.</p>
+            <h3>{editingId ? 'Edit User' : 'Create User'}</h3>
+            <p className="muted">Manage user accounts and their assigned roles.</p>
           </div>
           {editingId ? (
             <button
@@ -105,9 +114,24 @@ export default function UsersPage() {
               required={!editingId}
             />
           </label>
+          <label>
+            <span>Role</span>
+            <select
+              value={form.role}
+              onChange={(event) => setForm((prev) => ({ ...prev, role: event.target.value }))}
+              required
+            >
+              <option value="">Select a role</option>
+              {roles.map((role) => (
+                <option key={role.id} value={role.slug}>
+                  {role.name}
+                </option>
+              ))}
+            </select>
+          </label>
           {error ? <div className="alert error full">{error}</div> : null}
           <button className="btn primary" type="submit" disabled={isSaving}>
-            {isSaving ? 'Saving...' : editingId ? 'Update Editor' : 'Create Editor'}
+            {isSaving ? 'Saving...' : editingId ? 'Update User' : 'Create User'}
           </button>
         </form>
       </div>
@@ -115,25 +139,27 @@ export default function UsersPage() {
       <div className="card">
         <div className="card-header">
           <div>
-            <h3>Editors</h3>
-            <p className="muted">All editor accounts.</p>
+            <h3>Users</h3>
+            <p className="muted">All system accounts.</p>
           </div>
         </div>
         {usersQuery.error ? <div className="alert error">{usersQuery.error.message}</div> : null}
-        {isLoading ? <div className="muted">Loading editors...</div> : null}
-        {users.length === 0 && !isLoading ? <div className="muted">No editors yet.</div> : null}
+        {isLoading ? <div className="muted">Loading users...</div> : null}
+        {users.length === 0 && !isLoading ? <div className="muted">No users yet.</div> : null}
         <div className="table">
-          <div className="table-row table-head cols-4">
+          <div className="table-row table-head cols-5">
             <span>Name</span>
             <span>Email</span>
+            <span>Role</span>
             <span>Created</span>
             <span>Actions</span>
           </div>
           {users.map((user) => (
-            <div key={user.id} className="table-row cols-4">
+            <div key={user.id} className="table-row cols-5">
               <span>{user.name}</span>
               <span>{user.email}</span>
-              <span>{new Date(user.createdAt).toLocaleDateString()}</span>
+              <span><span className="badge">{user.role?.name || user.role || '-'}</span></span>
+              <span>{new Date(user.created_at || user.createdAt).toLocaleDateString()}</span>
               <div className="actions">
                 <button className="btn ghost" type="button" onClick={() => handleEdit(user)}>
                   Edit
@@ -149,3 +175,4 @@ export default function UsersPage() {
     </section>
   )
 }
+
