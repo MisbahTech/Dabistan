@@ -21,8 +21,8 @@ export default function UsersPage() {
   const updateUser = useUpdateUserMutation()
   const deleteUser = useDeleteUserMutation()
 
-  const users = usersQuery.data ?? []
-  const roles = rolesQuery.data?.data ?? []
+  const users = usersQuery.data?.data ?? (Array.isArray(usersQuery.data) ? usersQuery.data : [])
+  const roles = rolesQuery.data?.data ?? (Array.isArray(rolesQuery.data) ? rolesQuery.data : [])
   const isLoading = usersQuery.isLoading || rolesQuery.isLoading
   const isSaving = createUser.isPending || updateUser.isPending || deleteUser.isPending
 

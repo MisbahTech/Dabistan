@@ -1,26 +1,24 @@
-import apiClient from './apiClient'
+import { getJSON, postJSON, putJSON, deleteJSON } from './apiClient'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 export const permissionsApi = {
   list: async (params = {}) => {
-    const response = await apiClient.get('/permissions', { params })
-    return response.data
+    const query = new URLSearchParams(
+      Object.entries(params).filter(([, value]) => value !== undefined && value !== '')
+    ).toString()
+    return getJSON(`/permissions${query ? `?${query}` : ''}`)
   },
   get: async (id) => {
-    const response = await apiClient.get(`/permissions/${id}`)
-    return response.data
+    return getJSON(`/permissions/${id}`)
   },
   create: async (data) => {
-    const response = await apiClient.post('/permissions', data)
-    return response.data
+    return postJSON('/permissions', data)
   },
   update: async ({ id, ...data }) => {
-    const response = await apiClient.put(`/permissions/${id}`, data)
-    return response.data
+    return putJSON(`/permissions/${id}`, data)
   },
   delete: async (id) => {
-    const response = await apiClient.delete(`/permissions/${id}`)
-    return response.data
+    return deleteJSON(`/permissions/${id}`)
   }
 }
 

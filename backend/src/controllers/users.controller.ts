@@ -11,20 +11,15 @@ export async function listUsers(req: Request, res: Response, next: NextFunction)
       role: req.query.role as string | undefined,
       limit: pagination.limit,
       offset: pagination.offset,
-      withTotal: pagination.enabled,
-    })
+      withTotal: true,
+    }) as any
 
-    if (pagination.enabled && typeof data === 'object' && 'data' in data) {
-      res.json(formatPaginatedResponse({
-        data: data.data,
-        total: data.total || 0,
-        page: pagination.page,
-        pageSize: pagination.pageSize
-      }))
-      return
-    }
-
-    res.json(data)
+    res.json(formatPaginatedResponse({
+      data: data.data,
+      total: data.total || 0,
+      page: pagination.page,
+      pageSize: pagination.pageSize
+    }))
   } catch (error) {
     next(error)
   }

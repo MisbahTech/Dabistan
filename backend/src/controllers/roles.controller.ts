@@ -10,19 +10,15 @@ export async function listRoles(req: Request, res: Response, next: NextFunction)
       offset: pagination.offset,
       limit: pagination.limit,
       q: req.query.q as string,
-      withTotal: pagination.enabled
-    })
+      withTotal: true
+    }) as any
     
-    if (pagination.enabled && typeof result === 'object' && 'data' in result) {
-      return res.json(formatPaginatedResponse({
-        data: result.data,
-        total: result.total || 0,
-        page: pagination.page,
-        pageSize: pagination.pageSize
-      }))
-    }
-    
-    res.json(result)
+    res.json(formatPaginatedResponse({
+      data: result.data,
+      total: result.total || 0,
+      page: pagination.page,
+      pageSize: pagination.pageSize
+    }))
   } catch (error) {
     next(error)
   }
