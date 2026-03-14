@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { env } from './config/env.js'
 import { apiRouter } from './routes/index.js'
 import { notFoundHandler, errorHandler } from './middlewares/error.middleware.js'
+import { loggerMiddleware } from './middlewares/logger.middleware.js'
 
 export const app = express()
 
@@ -19,6 +20,7 @@ app.use(
     origin: corsOrigins.length > 1 ? corsOrigins : corsOrigins[0] ?? true,
   })
 )
+app.use(loggerMiddleware)
 app.use(express.json({ limit: '2mb' }))
 
 const __filename = fileURLToPath(import.meta.url)
