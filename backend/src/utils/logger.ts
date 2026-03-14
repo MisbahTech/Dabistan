@@ -1,6 +1,7 @@
 import winston from 'winston'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import chalk from 'chalk'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -19,22 +20,23 @@ const level = () => {
   return isDevelopment ? 'debug' : 'warn'
 }
 
-const colors = {
-  error: 'red',
-  warn: 'yellow',
-  info: 'green',
-  http: 'magenta',
-  debug: 'white',
+const levelColors: Record<string, (text: string) => string> = {
+  error: chalk.red.bold,
+  warn: chalk.yellow.bold,
+  info: chalk.cyan,
+  http: chalk.magenta,
+  debug: chalk.blue,
 }
-
-winston.addColors(colors)
 
 const format = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-  winston.format.colorize({ all: true }),
-  winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`
-  )
+  winston.format.printf((info) => {
+    const { timestamp, level, message, ...meta } = info
+    const colorizer = levelColors[level] || chalk.white
+    const metaString = Object.keys(meta).length ? `\n${JSON.stringify(meta, null, 2)}` : ''
+    
+    return `${chalk.gray(`[${timestamp}]`)} ${colorizer(level.toUpperCase().padEnd(5))}: ${message}${metaString}`
+  })
 )
 
 const transports = [
