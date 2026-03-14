@@ -1,23 +1,23 @@
 import mongoose, { Schema, Document } from 'mongoose'
 
-export interface IRole extends Document {
+export interface IPermission extends Document {
   id: number
   name: string
   slug: string
-  permissions: mongoose.Types.ObjectId[]
+  description?: string
   created_at: Date
   updated_at: Date
 }
 
-const RoleSchema: Schema = new Schema(
+const PermissionSchema: Schema = new Schema(
   {
     id: { type: Number, unique: true },
     name: { type: String, required: true, unique: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    permissions: [{ type: Schema.Types.ObjectId, ref: 'Permission' }],
+    description: { type: String, trim: true },
   },
   {
-    collection: 'roles',
+    collection: 'permissions',
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
     toJSON: {
       transform: (_doc, ret: any) => {
@@ -29,4 +29,4 @@ const RoleSchema: Schema = new Schema(
   }
 )
 
-export const Role = mongoose.model<IRole>('Role', RoleSchema)
+export const Permission = mongoose.model<IPermission>('Permission', PermissionSchema)

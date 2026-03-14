@@ -14,16 +14,18 @@ export interface ListRolesResult {
   total?: number
 }
 
+import { findPermissionsBySlugs } from './permissions.repository.js'
+
 export async function findRoleBySlug(slug: string): Promise<IRole | null> {
-  return Role.findOne({ slug }).lean()
+  return Role.findOne({ slug }).populate('permissions').lean()
 }
 
 export async function getRoleById(id: number): Promise<IRole | null> {
-  return Role.findOne({ id }).lean()
+  return Role.findOne({ id }).populate('permissions').lean()
 }
 
 export async function getRoleByObjectId(objectId: string): Promise<IRole | null> {
-  return Role.findById(objectId).lean()
+  return Role.findById(objectId).populate('permissions').lean()
 }
 
 export async function listRoles(options: ListRolesOptions = {}): Promise<IRole[] | ListRolesResult> {
@@ -35,7 +37,7 @@ export async function listRoles(options: ListRolesOptions = {}): Promise<IRole[]
     }
   }
 
-  let query = Role.find(filter).sort({ id: 1 }).lean()
+  let query = Role.find(filter).sort({ id: 1 }).populate('permissions').lean()
   
   if (options.offset) query = query.skip(options.offset)
   if (options.limit) query = query.limit(options.limit)
@@ -52,6 +54,12 @@ export async function listRoles(options: ListRolesOptions = {}): Promise<IRole[]
 
 export async function createRole(data: Partial<IRole>): Promise<any> {
   const id = await getNextId('roles')
+  
+  if (data.permissions && Array.isArray(data.permissions)) {
+    const permissionDocs = await findPermissionsBySlugs(data.permissions as any)
+    data.permissions = permissionDocs.map(p => (p as any)._id)
+  }
+
   const role = await Role.create({
     ...data,
     id,
@@ -60,18 +68,27 @@ export async function createRole(data: Partial<IRole>): Promise<any> {
 }
 
 export async function updateRole(id: number, data: Partial<IRole>): Promise<IRole | null> {
+  if (data.permissions && Array.isArray(data.permissions)) {
+    const permissionDocs = await findPermissionsBySlugs(data.permissions as any)
+    data.permissions = permissionDocs.map(p => (p as any)._id)
+  }
+
   return Role.findOneAndUpdate(
     { id },
     { $set: data },
     { new: true }
-  ).lean()
+  ).populate('permissions').lean()
 }
 
 export async function deleteRole(id: number): Promise<IRole | null> {
   return Role.findOneAndDelete({ id }).lean()
 }
 
+import { ensureDefaultPermissions } from './permissions.repository.js'
+
 export async function ensureDefaultRoles(): Promise<void> {
+  await ensureDefaultPermissions()
+
   const defaults = [
     { name: 'Admin', slug: 'admin', permissions: ['all'] },
     { name: 'Editor', slug: 'editor', permissions: ['posts.manage', 'categories.manage'] },
@@ -80,7 +97,7 @@ export async function ensureDefaultRoles(): Promise<void> {
   for (const r of defaults) {
     const exists = await Role.findOne({ slug: r.slug })
     if (!exists) {
-      await createRole(r)
+      await createRole(r as any)
     }
   }
 }

@@ -12,6 +12,7 @@ const navItems = [
   { to: '/exchange-rates', label: 'Exchange Rates', roles: ['admin', 'editor'] },
   { to: '/users', label: 'Users', roles: ['admin'] },
   { to: '/roles', label: 'Roles', roles: ['admin'] },
+  { to: '/permissions', label: 'Permissions', roles: ['admin'] },
 ]
 
 export default function DashboardLayout({ children }) {
@@ -47,7 +48,7 @@ export default function DashboardLayout({ children }) {
       <div className="main-area">
         <header className="topbar">
           <div>
-            <h2>{user?.role === 'admin' ? 'Admin Dashboard' : 'Editor Dashboard'}</h2>
+            <h2>{user?.role?.name || 'Dashboard'}</h2>
             <p>{user?.email}</p>
           </div>
           <button className="btn ghost" type="button" onClick={logout}>
