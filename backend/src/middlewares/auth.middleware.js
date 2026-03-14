@@ -7,7 +7,7 @@ export function signToken(payload) {
   return jwt.sign(payload, env.jwtSecret, { expiresIn: env.jwtExpiresIn })
 }
 
-export function requireAuth(req, _res, next) {
+export async function requireAuth(req, _res, next) {
   const header = req.headers.authorization
   if (!header?.startsWith('Bearer ')) {
     return next(createHttpError(401, 'Authorization required'))
@@ -16,17 +16,15 @@ export function requireAuth(req, _res, next) {
   const token = header.slice('Bearer '.length)
   try {
     const decoded = jwt.verify(token, env.jwtSecret)
-    User.findById(decoded.id)
-      .select('-passwordHash')
-      .then((user) => {
-        if (!user) {
-          return next(createHttpError(401, 'Invalid or expired token'))
-        }
-        req.user = user
-        return next()
-      })
-      .catch(() => next(createHttpError(401, 'Invalid or expired token')))
-  } catch {
+    const user = await User.findOne({ id: decoded.id }).select('-password_hash')
+
+    if (!user) {
+      return next(createHttpError(401, 'Invalid or expired token'))
+    }
+
+    req.user = user
+    return next()
+  } catch (error) {
     return next(createHttpError(401, 'Invalid or expired token'))
   }
 }
