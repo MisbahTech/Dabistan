@@ -13,6 +13,7 @@ import MostReadPage from './pages/MostRead'
 import WeatherPage from './pages/Weather'
 import ExchangeRatesPage from './pages/ExchangeRates'
 import UsersPage from './pages/Users'
+import RolesPage from './pages/Roles'
 import NotFoundPage from './pages/NotFound'
 import './styles/App.css'
 
@@ -107,6 +108,16 @@ export default function App() {
             <ProtectedRoute roles={['admin']}>
               <DashboardLayout>
                 <UsersPage />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/roles"
+          element={
+            <ProtectedRoute roles={['admin']}>
+              <DashboardLayout>
+                <RolesPage />
               </DashboardLayout>
             </ProtectedRoute>
           }

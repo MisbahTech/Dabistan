@@ -31,8 +31,10 @@ export async function requireAuth(req, _res, next) {
 
 export function requireRole(roles = []) {
   return (req, _res, next) => {
-    const role = req.user?.role
-    if (!role || (roles.length && !roles.includes(role))) {
+    const roleObj = req.user?.role
+    const roleSlug = typeof roleObj === 'string' ? roleObj : roleObj?.slug
+
+    if (!roleSlug || (roles.length && !roles.includes(roleSlug))) {
       return next(createHttpError(403, 'Insufficient permissions'))
     }
     return next()

@@ -1,11 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose'
+import { IRole } from './Role.js'
 
 export interface IUser extends Document {
   id: number
   name: string
   email: string
   password_hash: string
-  role: 'admin' | 'editor'
+  role: Schema.Types.ObjectId | IRole | string
   last_login_at: Date | null
   created_at: Date
   updated_at: Date
@@ -17,7 +18,7 @@ const UserSchema: Schema = new Schema(
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password_hash: { type: String, required: true, select: false },
-    role: { type: String, enum: ['admin', 'editor'], required: true, default: 'editor' },
+    role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
     last_login_at: { type: Date, default: null },
   },
   {

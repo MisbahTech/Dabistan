@@ -12,7 +12,8 @@ export default function ProtectedRoute({ children, roles }) {
     return <Navigate to="/login" replace />
   }
 
-  if (roles?.length && !roles.includes(user?.role)) {
+  const userRole = user?.role?.slug || user?.role
+  if (roles?.length && !roles.includes(userRole)) {
     return <Navigate to="/dashboard" replace />
   }
 

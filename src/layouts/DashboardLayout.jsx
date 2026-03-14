@@ -11,6 +11,7 @@ const navItems = [
   { to: '/weather', label: 'Weather Cache', roles: ['admin', 'editor'] },
   { to: '/exchange-rates', label: 'Exchange Rates', roles: ['admin', 'editor'] },
   { to: '/users', label: 'Users', roles: ['admin'] },
+  { to: '/roles', label: 'Roles', roles: ['admin'] },
 ]
 
 export default function DashboardLayout({ children }) {
@@ -28,7 +29,10 @@ export default function DashboardLayout({ children }) {
         </div>
         <nav className="sidebar-nav">
           {navItems
-            .filter((item) => item.roles.includes(user?.role))
+            .filter((item) => {
+              const userRole = user?.role?.slug || user?.role
+              return item.roles.includes(userRole)
+            })
             .map((item) => (
               <NavLink
                 key={item.to}
