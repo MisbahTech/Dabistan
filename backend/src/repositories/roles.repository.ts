@@ -76,7 +76,7 @@ export async function updateRole(id: number, data: Partial<IRole>): Promise<IRol
   return Role.findOneAndUpdate(
     { id },
     { $set: data },
-    { new: true }
+    { returnDocument: 'after' }
   ).populate('permissions').lean()
 }
 
@@ -94,10 +94,39 @@ export async function ensureDefaultRoles(): Promise<void> {
     { name: 'Editor', slug: 'editor', permissions: ['posts.manage', 'categories.manage'] },
   ]
 
+  // 1. Create defaults if they don't exist
   for (const r of defaults) {
-    const exists = await Role.findOne({ slug: r.slug })
+    const exists = await Role.findOne({ slug: r.slug }).lean()
     if (!exists) {
       await createRole(r as any)
+    }
+  }
+
+  // 2. Generic migration for ALL roles (including defaults and custom ones)
+  // We use .lean() to avoid CastError during Mongoose document instantiation
+  const allRoles = await Role.find({}).lean()
+  for (const role of allRoles) {
+    if (!role.permissions) continue
+    
+    // Check if any permission is still a string (legacy data)
+    const legacySlugs = role.permissions.filter(p => typeof p === 'string') as unknown as string[]
+    
+    if (legacySlugs.length > 0) {
+      console.log(`[Migration] Fixing legacy permissions for role: ${role.slug}`)
+      
+      const permissionDocs = await findPermissionsBySlugs(legacySlugs)
+      const validPermissionIds = permissionDocs.map(p => (p as any)._id)
+      
+      // We might have legacy strings that don't match any new Permission slug
+      // In that case, we should probably keep them as is or remove them, 
+      // but Mongoose will error if we try to save them as ObjectIds.
+      // For now, we only save the valid ObjectIds we found.
+      
+      await Role.updateOne(
+        { _id: (role as any)._id },
+        { $set: { permissions: validPermissionIds } }
+      )
+      console.log(`[Migration] Migrated ${validPermissionIds.length} permissions for ${role.slug}`)
     }
   }
 }

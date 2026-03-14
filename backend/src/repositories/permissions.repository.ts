@@ -66,7 +66,7 @@ export async function updatePermission(id: number, data: Partial<IPermission>): 
   return Permission.findOneAndUpdate(
     { id },
     { $set: data },
-    { new: true }
+    { returnDocument: 'after' }
   ).lean()
 }
 

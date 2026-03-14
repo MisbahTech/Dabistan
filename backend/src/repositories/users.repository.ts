@@ -117,7 +117,7 @@ export async function updateUser(id: number, data: Partial<IUser>): Promise<IUse
   return User.findOneAndUpdate(
     { id },
     { $set: data },
-    { new: true }
+    { returnDocument: 'after' }
   ).populate('role').lean()
 }
 
@@ -126,7 +126,7 @@ export async function updateUserPassword(id: number, password_hash: string): Pro
   return User.findOneAndUpdate(
     { id },
     { $set: { password_hash } },
-    { new: true }
+    { returnDocument: 'after' }
   ).lean()
 }
 
