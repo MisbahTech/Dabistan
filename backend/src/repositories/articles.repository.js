@@ -1,8 +1,8 @@
-import { getCollection, getNextId } from '../db/connection.js'
+import { Article } from '../models/Article.js'
+import { getNextId } from '../utils/counter.js'
 import { applyPagination, toSearchRegex } from '../utils/mongo.js'
 
 export async function listArticles(options = {}) {
-  const collection = await getCollection('articles')
   const filter = {}
 
   if (options.sectionSlug) {
@@ -16,13 +16,15 @@ export async function listArticles(options = {}) {
     }
   }
 
-  let cursor = collection.find(filter).sort({ id: 1 })
-  cursor = applyPagination(cursor, options.limit, options.offset)
+  let query = Article.find(filter).sort({ id: 1 }).lean()
+  
+  if (options.offset) query = query.skip(options.offset)
+  if (options.limit) query = query.limit(options.limit)
 
-  const data = await cursor.project({ _id: 0 }).toArray()
+  const data = await query
 
   if (options.withTotal) {
-    const total = await collection.countDocuments(filter)
+    const total = await Article.countDocuments(filter)
     return { data, total }
   }
 
@@ -30,46 +32,37 @@ export async function listArticles(options = {}) {
 }
 
 export async function getArticleById(id) {
-  const collection = await getCollection('articles')
-  return collection.findOne({ id }, { projection: { _id: 0 } })
+  return Article.findOne({ id }).lean()
 }
 
 export async function createArticle({ section_slug, title, excerpt, href }) {
-  const collection = await getCollection('articles')
   const id = await getNextId('articles')
-  const doc = {
+  const article = await Article.create({
     id,
     section_slug,
     title,
-    excerpt: excerpt ?? null,
+    excerpt,
     href,
-    created_at: new Date(),
-  }
-
-  await collection.insertOne(doc)
-  return doc
+  })
+  return article.toJSON()
 }
 
 export async function updateArticle(id, { section_slug, title, excerpt, href }) {
-  const collection = await getCollection('articles')
-  const result = await collection.findOneAndUpdate(
+  return Article.findOneAndUpdate(
     { id },
     {
       $set: {
         section_slug,
         title,
-        excerpt: excerpt ?? null,
+        excerpt,
         href,
       },
     },
-    { returnDocument: 'after', projection: { _id: 0 } }
-  )
-
-  return result.value ?? null
+    { new: true }
+  ).lean()
 }
 
 export async function deleteArticle(id) {
-  const collection = await getCollection('articles')
-  const result = await collection.findOneAndDelete({ id }, { projection: { _id: 0 } })
-  return result.value ?? null
+  return Article.findOneAndDelete({ id }).lean()
 }
+

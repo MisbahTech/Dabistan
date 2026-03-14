@@ -1,8 +1,8 @@
-import { getCollection, getNextId } from '../db/connection.js'
+import { Book } from '../models/Book.js'
+import { getNextId } from '../utils/counter.js'
 import { applyPagination, toSearchRegex } from '../utils/mongo.js'
 
 export async function listBooks(options = {}) {
-  const collection = await getCollection('books')
   const filter = {}
 
   if (options.q) {
@@ -12,13 +12,15 @@ export async function listBooks(options = {}) {
     }
   }
 
-  let cursor = collection.find(filter).sort({ id: 1 })
-  cursor = applyPagination(cursor, options.limit, options.offset)
+  let query = Book.find(filter).sort({ id: 1 }).lean()
+  
+  if (options.offset) query = query.skip(options.offset)
+  if (options.limit) query = query.limit(options.limit)
 
-  const data = await cursor.project({ _id: 0 }).toArray()
+  const data = await query
 
   if (options.withTotal) {
-    const total = await collection.countDocuments(filter)
+    const total = await Book.countDocuments(filter)
     return { data, total }
   }
 
@@ -26,47 +28,35 @@ export async function listBooks(options = {}) {
 }
 
 export async function getBookById(id) {
-  const collection = await getCollection('books')
-  return collection.findOne({ id }, { projection: { _id: 0 } })
+  return Book.findOne({ id }).lean()
 }
 
 export async function createBook({ slug, title, description }) {
-  const collection = await getCollection('books')
   const id = await getNextId('books')
-  const now = new Date()
-  const doc = {
+  const book = await Book.create({
     id,
     slug,
     title,
     description,
-    created_at: now,
-    updated_at: now,
-  }
-
-  await collection.insertOne(doc)
-  return doc
+  })
+  return book.toJSON()
 }
 
 export async function updateBook(id, { slug, title, description }) {
-  const collection = await getCollection('books')
-  const result = await collection.findOneAndUpdate(
+  return Book.findOneAndUpdate(
     { id },
     {
       $set: {
         slug,
         title,
         description,
-        updated_at: new Date(),
       },
     },
-    { returnDocument: 'after', projection: { _id: 0 } }
-  )
-
-  return result.value ?? null
+    { new: true }
+  ).lean()
 }
 
 export async function deleteBook(id) {
-  const collection = await getCollection('books')
-  const result = await collection.findOneAndDelete({ id }, { projection: { _id: 0 } })
-  return result.value ?? null
+  return Book.findOneAndDelete({ id }).lean()
 }
+

@@ -1,24 +1,26 @@
-import { getCollection, getNextId } from '../db/connection.js'
-import { applyPagination, toSearchRegex } from '../utils/mongo.js'
+import { Category } from '../models/Category.js'
+import { getNextId } from '../utils/counter.js'
+import { toSearchRegex, applyPagination } from '../utils/mongo.js'
 
 export async function listCategories(options = {}) {
-  const collection = await getCollection('categories')
   const filter = {}
 
   if (options.q) {
     const regex = toSearchRegex(options.q)
     if (regex) {
-      filter.$or = [{ title: regex }, { slug: regex }, { description: regex }]
+      filter.name = regex
     }
   }
 
-  let cursor = collection.find(filter).sort({ id: 1 })
-  cursor = applyPagination(cursor, options.limit, options.offset)
+  let query = Category.find(filter).sort({ id: 1 }).lean()
+  
+  if (options.offset) query = query.skip(options.offset)
+  if (options.limit) query = query.limit(options.limit)
 
-  const data = await cursor.project({ _id: 0 }).toArray()
+  const data = await query
 
   if (options.withTotal) {
-    const total = await collection.countDocuments(filter)
+    const total = await Category.countDocuments(filter)
     return { data, total }
   }
 
@@ -26,52 +28,32 @@ export async function listCategories(options = {}) {
 }
 
 export async function getCategoryById(id) {
-  const collection = await getCollection('categories')
-  return collection.findOne({ id }, { projection: { _id: 0 } })
+  return Category.findOne({ id }).lean()
 }
 
 export async function getCategoryBySlug(slug) {
-  const collection = await getCollection('categories')
-  return collection.findOne({ slug }, { projection: { _id: 0 } })
+  return Category.findOne({ slug }).lean()
 }
 
-export async function createCategory({ slug, title, description }) {
-  const collection = await getCollection('categories')
+export async function createCategory({ name, slug, description }) {
   const id = await getNextId('categories')
-  const now = new Date()
-  const doc = {
+  const category = await Category.create({
     id,
+    name,
     slug,
-    title,
-    description: description ?? null,
-    created_at: now,
-    updated_at: now,
-  }
-
-  await collection.insertOne(doc)
-  return doc
+    description,
+  })
+  return category.toJSON()
 }
 
-export async function updateCategory(id, { slug, title, description }) {
-  const collection = await getCollection('categories')
-  const result = await collection.findOneAndUpdate(
+export async function updateCategory(id, { name, slug, description }) {
+  return Category.findOneAndUpdate(
     { id },
-    {
-      $set: {
-        slug,
-        title,
-        description: description ?? null,
-        updated_at: new Date(),
-      },
-    },
-    { returnDocument: 'after', projection: { _id: 0 } }
-  )
-
-  return result.value ?? null
+    { $set: { name, slug, description } },
+    { new: true }
+  ).lean()
 }
 
 export async function deleteCategory(id) {
-  const collection = await getCollection('categories')
-  const result = await collection.findOneAndDelete({ id }, { projection: { _id: 0 } })
-  return result.value ?? null
+  return Category.findOneAndDelete({ id }).lean()
 }

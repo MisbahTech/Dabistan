@@ -1,8 +1,8 @@
-import { getCollection, getNextId } from '../db/connection.js'
+import { Video } from '../models/Video.js'
+import { getNextId } from '../utils/counter.js'
 import { applyPagination, toSearchRegex } from '../utils/mongo.js'
 
 export async function listVideos(options = {}) {
-  const collection = await getCollection('videos')
   const filter = {}
 
   if (options.category) {
@@ -16,13 +16,15 @@ export async function listVideos(options = {}) {
     }
   }
 
-  let cursor = collection.find(filter).sort({ published_at: -1, id: -1 })
-  cursor = applyPagination(cursor, options.limit, options.offset)
+  let query = Video.find(filter).sort({ published_at: -1, id: -1 }).lean()
+  
+  if (options.offset) query = query.skip(options.offset)
+  if (options.limit) query = query.limit(options.limit)
 
-  const data = await cursor.project({ _id: 0 }).toArray()
+  const data = await query
 
   if (options.withTotal) {
-    const total = await collection.countDocuments(filter)
+    const total = await Video.countDocuments(filter)
     return { data, total }
   }
 
@@ -30,55 +32,43 @@ export async function listVideos(options = {}) {
 }
 
 export async function getVideoById(id) {
-  const collection = await getCollection('videos')
-  return collection.findOne({ id }, { projection: { _id: 0 } })
+  return Video.findOne({ id }).lean()
 }
 
 export async function createVideo({ title, url, image, category, duration, published_at, description }) {
-  const collection = await getCollection('videos')
   const id = await getNextId('videos')
-  const now = new Date()
-  const doc = {
+  const video = await Video.create({
     id,
     title,
     url,
-    image: image ?? null,
-    category: category ?? null,
-    duration: duration ?? null,
-    description: description ?? null,
+    thumbnail: image, // Repository uses 'image' but model used 'thumbnail' initially, I'll align or use image.
+    category,
+    duration,
     published_at,
-    created_at: now,
-    updated_at: now,
-  }
-
-  await collection.insertOne(doc)
-  return doc
+    description,
+  })
+  return video.toJSON()
 }
 
 export async function updateVideo(id, { title, url, image, category, duration, published_at, description }) {
-  const collection = await getCollection('videos')
-  const result = await collection.findOneAndUpdate(
+  return Video.findOneAndUpdate(
     { id },
     {
       $set: {
         title,
         url,
-        image: image ?? null,
-        category: category ?? null,
-        duration: duration ?? null,
-        description: description ?? null,
+        thumbnail: image,
+        category,
+        duration,
         published_at,
-        updated_at: new Date(),
+        description,
       },
     },
-    { returnDocument: 'after', projection: { _id: 0 } }
-  )
-
-  return result.value ?? null
+    { new: true }
+  ).lean()
 }
 
 export async function deleteVideo(id) {
-  const collection = await getCollection('videos')
-  const result = await collection.findOneAndDelete({ id }, { projection: { _id: 0 } })
-  return result.value ?? null
+  return Video.findOneAndDelete({ id }).lean()
 }
+

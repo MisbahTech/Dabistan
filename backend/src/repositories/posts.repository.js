@@ -1,8 +1,8 @@
-import { getCollection, getNextId } from '../db/connection.js'
+import { Post } from '../models/Post.js'
+import { getNextId } from '../utils/counter.js'
 import { applyPagination, toSearchRegex } from '../utils/mongo.js'
 
 export async function listPosts(options = {}) {
-  const collection = await getCollection('posts')
   const filter = {}
 
   if (options.category) {
@@ -16,13 +16,15 @@ export async function listPosts(options = {}) {
     }
   }
 
-  let cursor = collection.find(filter).sort({ published_at: -1, id: -1 })
-  cursor = applyPagination(cursor, options.limit, options.offset)
+  let query = Post.find(filter).sort({ published_at: -1, id: -1 }).lean()
+  
+  if (options.offset) query = query.skip(options.offset)
+  if (options.limit) query = query.limit(options.limit)
 
-  const data = await cursor.project({ _id: 0 }).toArray()
+  const data = await query
 
   if (options.withTotal) {
-    const total = await collection.countDocuments(filter)
+    const total = await Post.countDocuments(filter)
     return { data, total }
   }
 
@@ -30,40 +32,31 @@ export async function listPosts(options = {}) {
 }
 
 export async function getPostById(id) {
-  const collection = await getCollection('posts')
-  return collection.findOne({ id }, { projection: { _id: 0 } })
+  return Post.findOne({ id }).lean()
 }
 
 export async function getPostBySlug(slug) {
-  const collection = await getCollection('posts')
-  return collection.findOne({ slug }, { projection: { _id: 0 } })
+  return Post.findOne({ slug }).lean()
 }
 
 export async function createPost({ title, slug, category, excerpt, image, published_at, author, content }) {
-  const collection = await getCollection('posts')
   const id = await getNextId('posts')
-  const now = new Date()
-  const doc = {
+  const post = await Post.create({
     id,
     title,
     slug,
     category,
-    excerpt: excerpt ?? null,
-    image: image ?? null,
+    excerpt,
+    image,
     published_at,
     author,
     content,
-    created_at: now,
-    updated_at: now,
-  }
-
-  await collection.insertOne(doc)
-  return doc
+  })
+  return post.toJSON()
 }
 
 export async function updatePost(id, { title, slug, category, excerpt, image, published_at, author, content }) {
-  const collection = await getCollection('posts')
-  const result = await collection.findOneAndUpdate(
+  return Post.findOneAndUpdate(
     { id },
     {
       $set: {
@@ -75,17 +68,13 @@ export async function updatePost(id, { title, slug, category, excerpt, image, pu
         published_at,
         author,
         content,
-        updated_at: new Date(),
       },
     },
-    { returnDocument: 'after', projection: { _id: 0 } }
-  )
-
-  return result.value ?? null
+    { new: true }
+  ).lean()
 }
 
 export async function deletePost(id) {
-  const collection = await getCollection('posts')
-  const result = await collection.findOneAndDelete({ id }, { projection: { _id: 0 } })
-  return result.value ?? null
+  return Post.findOneAndDelete({ id }).lean()
 }
+

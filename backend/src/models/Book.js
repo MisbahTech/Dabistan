@@ -1,14 +1,14 @@
 import mongoose from 'mongoose'
 
-const CategorySchema = new mongoose.Schema(
+const BookSchema = new mongoose.Schema(
   {
     id: { type: Number, unique: true },
-    name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    title: { type: String, required: true, trim: true },
     description: { type: String, default: '' },
   },
   {
-    collection: 'categories',
+    collection: 'books',
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 
     toJSON: {
@@ -21,5 +21,4 @@ const CategorySchema = new mongoose.Schema(
   }
 )
 
-export const Category = mongoose.model('Category', CategorySchema)
-
+export const Book = mongoose.model('Book', BookSchema)

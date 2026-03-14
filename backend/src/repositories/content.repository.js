@@ -2,7 +2,13 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { env } from '../config/env.js'
-import { getCollection } from '../db/connection.js'
+import { Section } from '../models/Section.js'
+import { Book } from '../models/Book.js'
+import { Article } from '../models/Article.js'
+import { MediaItem } from '../models/MediaItem.js'
+import { Link } from '../models/Link.js'
+import { NavLink } from '../models/NavLink.js'
+import { Contact } from '../models/Contact.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -47,31 +53,11 @@ const groupBySlug = (rows = []) =>
 
 async function fetchContentGroups() {
   const [sections, books, articles, media, links] = await Promise.all([
-    (await getCollection('sections'))
-      .find({})
-      .sort({ id: 1 })
-      .project({ _id: 0, id: 1, slug: 1, title: 1, description: 1 })
-      .toArray(),
-    (await getCollection('books'))
-      .find({})
-      .sort({ id: 1 })
-      .project({ _id: 0, id: 1, slug: 1, title: 1, description: 1 })
-      .toArray(),
-    (await getCollection('articles'))
-      .find({})
-      .sort({ id: 1 })
-      .project({ _id: 0, id: 1, section_slug: 1, title: 1, excerpt: 1, href: 1 })
-      .toArray(),
-    (await getCollection('media_items'))
-      .find({})
-      .sort({ id: 1 })
-      .project({ _id: 0, id: 1, section_slug: 1, media_type: 1, title: 1, url: 1, duration: 1, text: 1 })
-      .toArray(),
-    (await getCollection('links'))
-      .find({})
-      .sort({ id: 1 })
-      .project({ _id: 0, id: 1, section_slug: 1, label: 1, href: 1 })
-      .toArray(),
+    Section.find({}).sort({ id: 1 }).lean(),
+    Book.find({}).sort({ id: 1 }).lean(),
+    Article.find({}).sort({ id: 1 }).lean(),
+    MediaItem.find({}).sort({ id: 1 }).lean(),
+    Link.find({}).sort({ id: 1 }).lean(),
   ])
 
   const articlesBySlug = groupBySlug(articles)
@@ -118,21 +104,9 @@ async function fetchContentGroups() {
 
 async function fetchContentBySlug(slug) {
   const [articles, media, links] = await Promise.all([
-    (await getCollection('articles'))
-      .find({ section_slug: slug })
-      .sort({ id: 1 })
-      .project({ _id: 0, id: 1, section_slug: 1, title: 1, excerpt: 1, href: 1 })
-      .toArray(),
-    (await getCollection('media_items'))
-      .find({ section_slug: slug })
-      .sort({ id: 1 })
-      .project({ _id: 0, id: 1, section_slug: 1, media_type: 1, title: 1, url: 1, duration: 1, text: 1 })
-      .toArray(),
-    (await getCollection('links'))
-      .find({ section_slug: slug })
-      .sort({ id: 1 })
-      .project({ _id: 0, id: 1, section_slug: 1, label: 1, href: 1 })
-      .toArray(),
+    Article.find({ section_slug: slug }).sort({ id: 1 }).lean(),
+    MediaItem.find({ section_slug: slug }).sort({ id: 1 }).lean(),
+    Link.find({ section_slug: slug }).sort({ id: 1 }).lean(),
   ])
 
   const images = []
@@ -158,11 +132,9 @@ async function fetchContentBySlug(slug) {
 }
 
 async function fetchNavLinksFromDb() {
-  const result = await (await getCollection('nav_links'))
-    .find({})
+  const result = await NavLink.find({})
     .sort({ sort_order: 1, id: 1 })
-    .project({ _id: 0, nav_key: 1, path: 1, label: 1 })
-    .toArray()
+    .lean()
 
   return result.map((row) => ({
     key: row.nav_key,
@@ -172,11 +144,9 @@ async function fetchNavLinksFromDb() {
 }
 
 async function fetchContactsFromDb() {
-  const result = await (await getCollection('contacts'))
-    .find({})
+  const result = await Contact.find({})
     .sort({ sort_order: 1, created_at: 1 })
-    .project({ _id: 0, id: 1, label: 1, href: 1 })
-    .toArray()
+    .lean()
 
   return result.map((row) => ({
     id: row.id,
@@ -202,10 +172,7 @@ export const contentRepository = {
       return (seed.sections ?? []).find((item) => item.slug === slug) ?? null
     }
 
-    const section = await (await getCollection('sections')).findOne(
-      { slug },
-      { projection: { _id: 0, id: 1, slug: 1, title: 1, description: 1 } }
-    )
+    const section = await Section.findOne({ slug }).lean()
 
     if (!section) {
       return null
@@ -237,10 +204,7 @@ export const contentRepository = {
       return (seed.books ?? []).find((item) => item.slug === slug) ?? null
     }
 
-    const book = await (await getCollection('books')).findOne(
-      { slug },
-      { projection: { _id: 0, id: 1, slug: 1, title: 1, description: 1 } }
-    )
+    const book = await Book.findOne({ slug }).lean()
 
     if (!book) {
       return null
@@ -300,3 +264,4 @@ export const contentRepository = {
     }
   },
 }
+

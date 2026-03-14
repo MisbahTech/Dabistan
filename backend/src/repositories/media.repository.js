@@ -1,8 +1,8 @@
-import { getCollection, getNextId } from '../db/connection.js'
+import { MediaItem } from '../models/MediaItem.js'
+import { getNextId } from '../utils/counter.js'
 import { applyPagination, toSearchRegex } from '../utils/mongo.js'
 
 export async function listMediaItems(options = {}) {
-  const collection = await getCollection('media_items')
   const filter = {}
 
   if (options.sectionSlug) {
@@ -16,13 +16,15 @@ export async function listMediaItems(options = {}) {
     }
   }
 
-  let cursor = collection.find(filter).sort({ id: 1 })
-  cursor = applyPagination(cursor, options.limit, options.offset)
+  let query = MediaItem.find(filter).sort({ id: 1 }).lean()
+  
+  if (options.offset) query = query.skip(options.offset)
+  if (options.limit) query = query.limit(options.limit)
 
-  const data = await cursor.project({ _id: 0 }).toArray()
+  const data = await query
 
   if (options.withTotal) {
-    const total = await collection.countDocuments(filter)
+    const total = await MediaItem.countDocuments(filter)
     return { data, total }
   }
 
@@ -30,50 +32,41 @@ export async function listMediaItems(options = {}) {
 }
 
 export async function getMediaItemById(id) {
-  const collection = await getCollection('media_items')
-  return collection.findOne({ id }, { projection: { _id: 0 } })
+  return MediaItem.findOne({ id }).lean()
 }
 
 export async function createMediaItem({ section_slug, media_type, title, url, duration, text }) {
-  const collection = await getCollection('media_items')
   const id = await getNextId('media_items')
-  const doc = {
+  const mediaItem = await MediaItem.create({
     id,
     section_slug,
     media_type,
     title,
-    url: url ?? null,
-    duration: duration ?? null,
-    text: text ?? null,
-    created_at: new Date(),
-  }
-
-  await collection.insertOne(doc)
-  return doc
+    url,
+    duration,
+    text,
+  })
+  return mediaItem.toJSON()
 }
 
 export async function updateMediaItem(id, { section_slug, media_type, title, url, duration, text }) {
-  const collection = await getCollection('media_items')
-  const result = await collection.findOneAndUpdate(
+  return MediaItem.findOneAndUpdate(
     { id },
     {
       $set: {
         section_slug,
         media_type,
         title,
-        url: url ?? null,
-        duration: duration ?? null,
-        text: text ?? null,
+        url,
+        duration,
+        text,
       },
     },
-    { returnDocument: 'after', projection: { _id: 0 } }
-  )
-
-  return result.value ?? null
+    { new: true }
+  ).lean()
 }
 
 export async function deleteMediaItem(id) {
-  const collection = await getCollection('media_items')
-  const result = await collection.findOneAndDelete({ id }, { projection: { _id: 0 } })
-  return result.value ?? null
+  return MediaItem.findOneAndDelete({ id }).lean()
 }
+

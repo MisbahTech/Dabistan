@@ -1,8 +1,8 @@
-import { getCollection, getNextId } from '../db/connection.js'
+import { Link } from '../models/Link.js'
+import { getNextId } from '../utils/counter.js'
 import { applyPagination, toSearchRegex } from '../utils/mongo.js'
 
 export async function listLinks(options = {}) {
-  const collection = await getCollection('links')
   const filter = {}
 
   if (options.sectionSlug) {
@@ -16,13 +16,15 @@ export async function listLinks(options = {}) {
     }
   }
 
-  let cursor = collection.find(filter).sort({ id: 1 })
-  cursor = applyPagination(cursor, options.limit, options.offset)
+  let query = Link.find(filter).sort({ id: 1 }).lean()
+  
+  if (options.offset) query = query.skip(options.offset)
+  if (options.limit) query = query.limit(options.limit)
 
-  const data = await cursor.project({ _id: 0 }).toArray()
+  const data = await query
 
   if (options.withTotal) {
-    const total = await collection.countDocuments(filter)
+    const total = await Link.countDocuments(filter)
     return { data, total }
   }
 
@@ -30,28 +32,22 @@ export async function listLinks(options = {}) {
 }
 
 export async function getLinkById(id) {
-  const collection = await getCollection('links')
-  return collection.findOne({ id }, { projection: { _id: 0 } })
+  return Link.findOne({ id }).lean()
 }
 
 export async function createLink({ section_slug, label, href }) {
-  const collection = await getCollection('links')
   const id = await getNextId('links')
-  const doc = {
+  const link = await Link.create({
     id,
     section_slug,
     label,
     href,
-    created_at: new Date(),
-  }
-
-  await collection.insertOne(doc)
-  return doc
+  })
+  return link.toJSON()
 }
 
 export async function updateLink(id, { section_slug, label, href }) {
-  const collection = await getCollection('links')
-  const result = await collection.findOneAndUpdate(
+  return Link.findOneAndUpdate(
     { id },
     {
       $set: {
@@ -60,14 +56,11 @@ export async function updateLink(id, { section_slug, label, href }) {
         href,
       },
     },
-    { returnDocument: 'after', projection: { _id: 0 } }
-  )
-
-  return result.value ?? null
+    { new: true }
+  ).lean()
 }
 
 export async function deleteLink(id) {
-  const collection = await getCollection('links')
-  const result = await collection.findOneAndDelete({ id }, { projection: { _id: 0 } })
-  return result.value ?? null
+  return Link.findOneAndDelete({ id }).lean()
 }
+

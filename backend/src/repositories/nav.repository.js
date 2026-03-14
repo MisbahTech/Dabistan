@@ -1,8 +1,8 @@
-import { getCollection, getNextId } from '../db/connection.js'
+import { NavLink } from '../models/NavLink.js'
+import { getNextId } from '../utils/counter.js'
 import { applyPagination, toSearchRegex } from '../utils/mongo.js'
 
 export async function listNavLinks(options = {}) {
-  const collection = await getCollection('nav_links')
   const filter = {}
 
   if (options.q) {
@@ -12,13 +12,15 @@ export async function listNavLinks(options = {}) {
     }
   }
 
-  let cursor = collection.find(filter).sort({ sort_order: 1, id: 1 })
-  cursor = applyPagination(cursor, options.limit, options.offset)
+  let query = NavLink.find(filter).sort({ sort_order: 1, id: 1 }).lean()
+  
+  if (options.offset) query = query.skip(options.offset)
+  if (options.limit) query = query.limit(options.limit)
 
-  const data = await cursor.project({ _id: 0 }).toArray()
+  const data = await query
 
   if (options.withTotal) {
-    const total = await collection.countDocuments(filter)
+    const total = await NavLink.countDocuments(filter)
     return { data, total }
   }
 
@@ -26,31 +28,23 @@ export async function listNavLinks(options = {}) {
 }
 
 export async function getNavLinkById(id) {
-  const collection = await getCollection('nav_links')
-  return collection.findOne({ id }, { projection: { _id: 0 } })
+  return NavLink.findOne({ id }).lean()
 }
 
 export async function createNavLink({ nav_key, path, label, sort_order }) {
-  const collection = await getCollection('nav_links')
   const id = await getNextId('nav_links')
-  const now = new Date()
-  const doc = {
+  const navLink = await NavLink.create({
     id,
     nav_key,
     path,
     label,
     sort_order: Number.isInteger(sort_order) ? sort_order : 0,
-    created_at: now,
-    updated_at: now,
-  }
-
-  await collection.insertOne(doc)
-  return doc
+  })
+  return navLink.toJSON()
 }
 
 export async function updateNavLink(id, { nav_key, path, label, sort_order }) {
-  const collection = await getCollection('nav_links')
-  const result = await collection.findOneAndUpdate(
+  return NavLink.findOneAndUpdate(
     { id },
     {
       $set: {
@@ -58,17 +52,13 @@ export async function updateNavLink(id, { nav_key, path, label, sort_order }) {
         path,
         label,
         sort_order: Number.isInteger(sort_order) ? sort_order : 0,
-        updated_at: new Date(),
       },
     },
-    { returnDocument: 'after', projection: { _id: 0 } }
-  )
-
-  return result.value ?? null
+    { new: true }
+  ).lean()
 }
 
 export async function deleteNavLink(id) {
-  const collection = await getCollection('nav_links')
-  const result = await collection.findOneAndDelete({ id }, { projection: { _id: 0 } })
-  return result.value ?? null
+  return NavLink.findOneAndDelete({ id }).lean()
 }
+

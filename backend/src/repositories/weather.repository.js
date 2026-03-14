@@ -1,14 +1,17 @@
-import { getCollection, getNextId } from '../db/connection.js'
+import { Weather } from '../models/Weather.js'
+import { getNextId } from '../utils/counter.js'
 import { applyPagination } from '../utils/mongo.js'
 
 export async function listWeather(options = {}) {
-  const collection = await getCollection('weather')
-  let cursor = collection.find({}).sort({ updated_at: -1, id: -1 })
-  cursor = applyPagination(cursor, options.limit, options.offset)
-  const data = await cursor.project({ _id: 0 }).toArray()
+  let query = Weather.find({}).sort({ updated_at: -1, id: -1 }).lean()
+  
+  if (options.offset) query = query.skip(options.offset)
+  if (options.limit) query = query.limit(options.limit)
+
+  const data = await query
 
   if (options.withTotal) {
-    const total = await collection.countDocuments({})
+    const total = await Weather.countDocuments({})
     return { data, total }
   }
 
@@ -16,47 +19,35 @@ export async function listWeather(options = {}) {
 }
 
 export async function getWeatherById(id) {
-  const collection = await getCollection('weather')
-  return collection.findOne({ id }, { projection: { _id: 0 } })
+  return Weather.findOne({ id }).lean()
 }
 
-export async function createWeather({ location, temperature, condition, updated_at }) {
-  const collection = await getCollection('weather')
+export async function createWeather({ location, temperature, condition }) {
   const id = await getNextId('weather')
-  const now = new Date()
-  const doc = {
+  const weather = await Weather.create({
     id,
     location,
     temperature,
     condition,
-    updated_at: updated_at ?? now,
-    created_at: now,
-  }
-
-  await collection.insertOne(doc)
-  return doc
+  })
+  return weather.toJSON()
 }
 
-export async function updateWeather(id, { location, temperature, condition, updated_at }) {
-  const collection = await getCollection('weather')
-  const result = await collection.findOneAndUpdate(
+export async function updateWeather(id, { location, temperature, condition }) {
+  return Weather.findOneAndUpdate(
     { id },
     {
       $set: {
         location,
         temperature,
         condition,
-        updated_at: updated_at ?? new Date(),
       },
     },
-    { returnDocument: 'after', projection: { _id: 0 } }
-  )
-
-  return result.value ?? null
+    { new: true }
+  ).lean()
 }
 
 export async function deleteWeather(id) {
-  const collection = await getCollection('weather')
-  const result = await collection.findOneAndDelete({ id }, { projection: { _id: 0 } })
-  return result.value ?? null
+  return Weather.findOneAndDelete({ id }).lean()
 }
+

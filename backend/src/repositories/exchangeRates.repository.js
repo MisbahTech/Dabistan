@@ -1,14 +1,17 @@
-import { getCollection, getNextId } from '../db/connection.js'
+import { ExchangeRate } from '../models/ExchangeRate.js'
+import { getNextId } from '../utils/counter.js'
 import { applyPagination } from '../utils/mongo.js'
 
 export async function listExchangeRates(options = {}) {
-  const collection = await getCollection('exchange_rates')
-  let cursor = collection.find({}).sort({ updated_at: -1, id: -1 })
-  cursor = applyPagination(cursor, options.limit, options.offset)
-  const data = await cursor.project({ _id: 0 }).toArray()
+  let query = ExchangeRate.find({}).sort({ updated_at: -1, id: -1 }).lean()
+  
+  if (options.offset) query = query.skip(options.offset)
+  if (options.limit) query = query.limit(options.limit)
+
+  const data = await query
 
   if (options.withTotal) {
-    const total = await collection.countDocuments({})
+    const total = await ExchangeRate.countDocuments({})
     return { data, total }
   }
 
@@ -16,47 +19,35 @@ export async function listExchangeRates(options = {}) {
 }
 
 export async function getExchangeRateById(id) {
-  const collection = await getCollection('exchange_rates')
-  return collection.findOne({ id }, { projection: { _id: 0 } })
+  return ExchangeRate.findOne({ id }).lean()
 }
 
-export async function createExchangeRate({ base, currency, rate, updated_at }) {
-  const collection = await getCollection('exchange_rates')
+export async function createExchangeRate({ base, currency, rate }) {
   const id = await getNextId('exchange_rates')
-  const now = new Date()
-  const doc = {
+  const exchangeRate = await ExchangeRate.create({
     id,
     base,
     currency,
     rate,
-    updated_at: updated_at ?? now,
-    created_at: now,
-  }
-
-  await collection.insertOne(doc)
-  return doc
+  })
+  return exchangeRate.toJSON()
 }
 
-export async function updateExchangeRate(id, { base, currency, rate, updated_at }) {
-  const collection = await getCollection('exchange_rates')
-  const result = await collection.findOneAndUpdate(
+export async function updateExchangeRate(id, { base, currency, rate }) {
+  return ExchangeRate.findOneAndUpdate(
     { id },
     {
       $set: {
         base,
         currency,
         rate,
-        updated_at: updated_at ?? new Date(),
       },
     },
-    { returnDocument: 'after', projection: { _id: 0 } }
-  )
-
-  return result.value ?? null
+    { new: true }
+  ).lean()
 }
 
 export async function deleteExchangeRate(id) {
-  const collection = await getCollection('exchange_rates')
-  const result = await collection.findOneAndDelete({ id }, { projection: { _id: 0 } })
-  return result.value ?? null
+  return ExchangeRate.findOneAndDelete({ id }).lean()
 }
+

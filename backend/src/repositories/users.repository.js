@@ -1,24 +1,16 @@
-import { getCollection, getNextId } from '../db/connection.js'
+import { User } from '../models/User.js'
+import { getNextId } from '../utils/counter.js'
 import { applyPagination, toSearchRegex } from '../utils/mongo.js'
 
 export async function findUserByEmail(email) {
-  const collection = await getCollection('users')
-  return collection.findOne(
-    { email },
-    { projection: { _id: 0 } }
-  )
+  return User.findOne({ email }).select('+password_hash').lean()
 }
 
 export async function getUserById(id) {
-  const collection = await getCollection('users')
-  return collection.findOne(
-    { id },
-    { projection: { _id: 0, password_hash: 0 } }
-  )
+  return User.findOne({ id }).lean()
 }
 
 export async function listUsers(options = {}) {
-  const collection = await getCollection('users')
   const filter = {}
 
   if (options.q) {
@@ -28,13 +20,15 @@ export async function listUsers(options = {}) {
     }
   }
 
-  let cursor = collection.find(filter).sort({ id: 1 })
-  cursor = applyPagination(cursor, options.limit, options.offset)
+  let query = User.find(filter).sort({ id: 1 }).lean()
+  
+  if (options.offset) query = query.skip(options.offset)
+  if (options.limit) query = query.limit(options.limit)
 
-  const data = await cursor.project({ _id: 0, password_hash: 0 }).toArray()
+  const data = await query
 
   if (options.withTotal) {
-    const total = await collection.countDocuments(filter)
+    const total = await User.countDocuments(filter)
     return { data, total }
   }
 
@@ -42,66 +36,36 @@ export async function listUsers(options = {}) {
 }
 
 export async function createUser({ email, password_hash, role }) {
-  const collection = await getCollection('users')
   const id = await getNextId('users')
-  const now = new Date()
-  const doc = {
+  const user = await User.create({
     id,
     email,
     password_hash,
     role,
-    last_login_at: null,
-    created_at: now,
-    updated_at: now,
-  }
-
-  await collection.insertOne(doc)
-  const { password_hash: _ignored, ...safe } = doc
-  return safe
+  })
+  return user.toJSON()
 }
 
 export async function updateUserRole(id, role) {
-  const collection = await getCollection('users')
-  const result = await collection.findOneAndUpdate(
+  return User.findOneAndUpdate(
     { id },
-    {
-      $set: {
-        role,
-        updated_at: new Date(),
-      },
-    },
-    { returnDocument: 'after', projection: { _id: 0, password_hash: 0 } }
-  )
-
-  return result.value ?? null
+    { $set: { role } },
+    { new: true }
+  ).lean()
 }
 
 export async function updateUserPassword(id, password_hash) {
-  const collection = await getCollection('users')
-  const result = await collection.findOneAndUpdate(
+  return User.findOneAndUpdate(
     { id },
-    {
-      $set: {
-        password_hash,
-        updated_at: new Date(),
-      },
-    },
-    { returnDocument: 'after', projection: { _id: 0, password_hash: 0 } }
-  )
-
-  return result.value ?? null
+    { $set: { password_hash } },
+    { new: true }
+  ).lean()
 }
 
 export async function deleteUser(id) {
-  const collection = await getCollection('users')
-  const result = await collection.findOneAndDelete(
-    { id },
-    { projection: { _id: 0, password_hash: 0 } }
-  )
-  return result.value ?? null
+  return User.findOneAndDelete({ id }).lean()
 }
 
 export async function updateLastLogin(id) {
-  const collection = await getCollection('users')
-  await collection.updateOne({ id }, { $set: { last_login_at: new Date() } })
+  await User.updateOne({ id }, { $set: { last_login_at: new Date() } })
 }
