@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createUser, deleteUser, listUsers, updateUserRole } from '../controllers/users.controller.js'
+import { createUser, deleteUser, listUsers, updateUser } from '../controllers/users.controller.js'
 import { requireAuth, requireRole } from '../middlewares/auth.middleware.js'
 
 export const usersRouter = Router()
@@ -9,5 +9,5 @@ usersRouter.use(requireRole(['admin']))
 
 usersRouter.get('/', listUsers)
 usersRouter.post('/', createUser)
-usersRouter.put('/:id', updateUserRole)
+usersRouter.put('/:id', updateUser)
 usersRouter.delete('/:id', deleteUser)

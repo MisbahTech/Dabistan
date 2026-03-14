@@ -47,7 +47,7 @@ export default function MostReadPage() {
   }
 
   const handleEdit = (item) => {
-    setEditingId(item._id)
+    setEditingId(item.id)
     setForm({
       title: item.title ?? '',
       slug: item.slug ?? '',
@@ -161,7 +161,7 @@ export default function MostReadPage() {
             <span>Actions</span>
           </div>
           {items.map((item) => (
-            <div key={item._id} className="table-row cols-4">
+            <div key={item.id} className="table-row cols-4">
               <span>{item.title}</span>
               <span>{item.category || '-'}</span>
               <span>{item.rank ?? '-'}</span>
@@ -169,7 +169,7 @@ export default function MostReadPage() {
                 <button className="btn ghost" type="button" onClick={() => handleEdit(item)}>
                   Edit
                 </button>
-                <button className="btn danger" type="button" onClick={() => handleDelete(item._id)}>
+                <button className="btn danger" type="button" onClick={() => handleDelete(item.id)}>
                   Delete
                 </button>
               </div>

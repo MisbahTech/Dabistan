@@ -39,7 +39,7 @@ export default function WeatherPage() {
   }
 
   const handleEdit = (item) => {
-    setEditingId(item._id)
+    setEditingId(item.id)
     setForm({
       location: item.location ?? '',
       temperature: item.temperature ?? '',
@@ -136,7 +136,7 @@ export default function WeatherPage() {
             <span>Actions</span>
           </div>
           {items.map((item) => (
-            <div key={item._id} className="table-row cols-4">
+            <div key={item.id} className="table-row cols-4">
               <span>{item.location}</span>
               <span>{item.temperature}</span>
               <span>{item.condition}</span>
@@ -144,7 +144,7 @@ export default function WeatherPage() {
                 <button className="btn ghost" type="button" onClick={() => handleEdit(item)}>
                   Edit
                 </button>
-                <button className="btn danger" type="button" onClick={() => handleDelete(item._id)}>
+                <button className="btn danger" type="button" onClick={() => handleDelete(item.id)}>
                   Delete
                 </button>
               </div>

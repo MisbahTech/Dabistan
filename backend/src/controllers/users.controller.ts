@@ -44,7 +44,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
 export async function createUser(req: Request, res: Response, next: NextFunction) {
   try {
     requireBody(req)
-    requireFieldsFor(req.body, ['email', 'password', 'role'])
+    requireFieldsFor(req.body, ['name', 'email', 'password', 'role'])
     const data = await usersService.create(req.body)
     res.status(201).json(data)
   } catch (error) {
@@ -52,12 +52,11 @@ export async function createUser(req: Request, res: Response, next: NextFunction
   }
 }
 
-export async function updateUserRole(req: Request, res: Response, next: NextFunction) {
+export async function updateUser(req: Request, res: Response, next: NextFunction) {
   try {
     const id = parseId(req.params.id as string)
     requireBody(req)
-    requireFieldsFor(req.body, ['role'])
-    const data = await usersService.updateRole(id, req.body.role)
+    const data = await usersService.update(id, req.body)
     ensureFound(data, 'User')
     res.json(data)
   } catch (error) {

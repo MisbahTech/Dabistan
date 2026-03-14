@@ -66,7 +66,7 @@ export default function PostsPage() {
   }
 
   const handleEdit = (post) => {
-    setEditingId(post._id)
+    setEditingId(post.id)
     setForm({
       title: post.title ?? '',
       slug: post.slug ?? '',
@@ -164,7 +164,7 @@ export default function PostsPage() {
             />
             <datalist id="category-options">
               {categories.map((cat) => (
-                <option key={cat._id} value={cat.slug}>
+                <option key={cat.id} value={cat.slug}>
                   {cat.name}
                 </option>
               ))}
@@ -269,7 +269,7 @@ export default function PostsPage() {
             <span>Actions</span>
           </div>
           {posts.map((post) => (
-            <div key={post._id} className="table-row cols-5">
+            <div key={post.id} className="table-row cols-5">
               <span>{post.title}</span>
               <span className={`badge ${post.status}`}>{post.status}</span>
               <span>{post.category || '-'}</span>
@@ -283,7 +283,7 @@ export default function PostsPage() {
                 <button className="btn ghost" type="button" onClick={() => handleEdit(post)}>
                   Edit
                 </button>
-                <button className="btn danger" type="button" onClick={() => handleDelete(post._id)}>
+                <button className="btn danger" type="button" onClick={() => handleDelete(post.id)}>
                   Delete
                 </button>
               </div>

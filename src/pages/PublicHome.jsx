@@ -121,7 +121,7 @@ export default function PublicHome() {
         <div className="public-grid">
           {rest.map((post, index) => (
             <article
-              key={post._id}
+              key={post.id}
               className="post-card"
               style={{ '--delay': `${index * 80}ms` }}
             >

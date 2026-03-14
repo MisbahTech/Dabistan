@@ -39,7 +39,7 @@ export default function ExchangeRatesPage() {
   }
 
   const handleEdit = (item) => {
-    setEditingId(item._id)
+    setEditingId(item.id)
     setForm({
       base: item.base ?? '',
       currency: item.currency ?? '',
@@ -136,7 +136,7 @@ export default function ExchangeRatesPage() {
             <span>Actions</span>
           </div>
           {items.map((item) => (
-            <div key={item._id} className="table-row cols-4">
+            <div key={item.id} className="table-row cols-4">
               <span>{item.base}</span>
               <span>{item.currency}</span>
               <span>{item.rate}</span>
@@ -144,7 +144,7 @@ export default function ExchangeRatesPage() {
                 <button className="btn ghost" type="button" onClick={() => handleEdit(item)}>
                   Edit
                 </button>
-                <button className="btn danger" type="button" onClick={() => handleDelete(item._id)}>
+                <button className="btn danger" type="button" onClick={() => handleDelete(item.id)}>
                   Delete
                 </button>
               </div>

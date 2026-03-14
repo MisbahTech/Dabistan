@@ -39,7 +39,7 @@ export default function UsersPage() {
   }
 
   const handleEdit = (user) => {
-    setEditingId(user._id)
+    setEditingId(user.id)
     setForm({ name: user.name ?? '', email: user.email ?? '', password: '' })
   }
 
@@ -130,7 +130,7 @@ export default function UsersPage() {
             <span>Actions</span>
           </div>
           {users.map((user) => (
-            <div key={user._id} className="table-row cols-4">
+            <div key={user.id} className="table-row cols-4">
               <span>{user.name}</span>
               <span>{user.email}</span>
               <span>{new Date(user.createdAt).toLocaleDateString()}</span>
@@ -138,7 +138,7 @@ export default function UsersPage() {
                 <button className="btn ghost" type="button" onClick={() => handleEdit(user)}>
                   Edit
                 </button>
-                <button className="btn danger" type="button" onClick={() => handleDelete(user._id)}>
+                <button className="btn danger" type="button" onClick={() => handleDelete(user.id)}>
                   Delete
                 </button>
               </div>

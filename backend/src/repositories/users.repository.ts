@@ -50,10 +50,11 @@ export async function listUsers(options: ListUsersOptions = {}): Promise<IUser[]
   return data
 }
 
-export async function createUser({ email, password_hash, role }: { email: string; password_hash: string; role: string }): Promise<any> {
+export async function createUser({ name, email, password_hash, role }: { name: string; email: string; password_hash: string; role: string }): Promise<any> {
   const id = await getNextId('users')
   const user = await User.create({
     id,
+    name,
     email,
     password_hash,
     role,
@@ -61,13 +62,14 @@ export async function createUser({ email, password_hash, role }: { email: string
   return user.toJSON()
 }
 
-export async function updateUserRole(id: number, role: string): Promise<IUser | null> {
+export async function updateUser(id: number, data: Partial<IUser>): Promise<IUser | null> {
   return User.findOneAndUpdate(
     { id },
-    { $set: { role } },
+    { $set: data },
     { new: true }
   ).lean()
 }
+
 
 export async function updateUserPassword(id: number, password_hash: string): Promise<IUser | null> {
   return User.findOneAndUpdate(

@@ -16,13 +16,13 @@ export const usersService = {
     return usersRepository.findUserByEmail(email)
   },
 
-  async create({ email, password, role }: { email: string; password: string; role: string }): Promise<any> {
+  async create({ name, email, password, role }: { name: string; email: string; password: string; role: string }): Promise<any> {
     const password_hash = await hashPassword(password)
-    return usersRepository.createUser({ email, password_hash, role })
+    return usersRepository.createUser({ name, email, password_hash, role })
   },
 
-  updateRole(id: number, role: string): Promise<IUser | null> {
-    return usersRepository.updateUserRole(id, role)
+  update(id: number, data: Partial<IUser>): Promise<IUser | null> {
+    return usersRepository.updateUser(id, data)
   },
 
   async updatePassword(id: number, password: string): Promise<IUser | null> {

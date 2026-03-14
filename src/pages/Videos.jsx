@@ -48,7 +48,7 @@ export default function VideosPage() {
   }
 
   const handleEdit = (item) => {
-    setEditingId(item._id)
+    setEditingId(item.id)
     setForm({
       title: item.title ?? '',
       url: item.url ?? '',
@@ -180,7 +180,7 @@ export default function VideosPage() {
             <span>Actions</span>
           </div>
           {items.map((item) => (
-            <div key={item._id} className="table-row cols-4">
+            <div key={item.id} className="table-row cols-4">
               <span>{item.title}</span>
               <span>{item.category || '-'}</span>
               <span>{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : '-'}</span>
@@ -188,7 +188,7 @@ export default function VideosPage() {
                 <button className="btn ghost" type="button" onClick={() => handleEdit(item)}>
                   Edit
                 </button>
-                <button className="btn danger" type="button" onClick={() => handleDelete(item._id)}>
+                <button className="btn danger" type="button" onClick={() => handleDelete(item.id)}>
                   Delete
                 </button>
               </div>

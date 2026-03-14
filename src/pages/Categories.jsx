@@ -57,7 +57,7 @@ export default function CategoriesPage() {
   }
 
   const handleEdit = (item) => {
-    setEditingId(item._id)
+    setEditingId(item.id)
     setForm({
       name: item.name ?? '',
       slug: item.slug ?? '',
@@ -190,7 +190,7 @@ export default function CategoriesPage() {
             <span>Actions</span>
           </div>
           {items.map((item) => (
-            <div key={item._id} className="table-row cols-4">
+            <div key={item.id} className="table-row cols-4">
               <span>{item.name}</span>
               <span>{item.slug}</span>
               <span>{item.description || '-'}</span>
@@ -198,7 +198,7 @@ export default function CategoriesPage() {
                 <button className="btn ghost" type="button" onClick={() => handleEdit(item)}>
                   Edit
                 </button>
-                <button className="btn danger" type="button" onClick={() => handleDelete(item._id)}>
+                <button className="btn danger" type="button" onClick={() => handleDelete(item.id)}>
                   Delete
                 </button>
               </div>

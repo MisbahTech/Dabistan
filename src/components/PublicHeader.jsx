@@ -100,7 +100,7 @@ export default function PublicHeader({
         </Link>
         {mainItems.map((item) => (
           <Link
-            key={item._id}
+            key={item.id}
             className={`menu-link${activeCategory === item.slug ? ' active' : ''}`}
             to={buildLink(item.slug, searchValue)}
           >
@@ -122,7 +122,7 @@ export default function PublicHeader({
               </Link>
               {bookItems.map((item) => (
                 <Link
-                  key={item._id}
+                  key={item.id}
                   className={`menu-item${activeCategory === item.slug ? ' active' : ''}`}
                   to={buildLink(item.slug, searchValue)}
                 >
@@ -141,7 +141,7 @@ export default function PublicHeader({
             <div className="menu-dropdown">
               {otherItems.map((item) => (
                 <Link
-                  key={item._id}
+                  key={item.id}
                   className={`menu-item${activeCategory === item.slug ? ' active' : ''}`}
                   to={buildLink(item.slug, searchValue)}
                 >
