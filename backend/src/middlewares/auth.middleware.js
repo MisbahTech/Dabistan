@@ -1,0 +1,42 @@
+import jwt from 'jsonwebtoken'
+import { env } from '../config/env.js'
+import { createHttpError } from '../utils/http.js'
+import { User } from '../models/User.js'
+
+export function signToken(payload) {
+  return jwt.sign(payload, env.jwtSecret, { expiresIn: env.jwtExpiresIn })
+}
+
+export function requireAuth(req, _res, next) {
+  const header = req.headers.authorization
+  if (!header?.startsWith('Bearer ')) {
+    return next(createHttpError(401, 'Authorization required'))
+  }
+
+  const token = header.slice('Bearer '.length)
+  try {
+    const decoded = jwt.verify(token, env.jwtSecret)
+    User.findById(decoded.id)
+      .select('-passwordHash')
+      .then((user) => {
+        if (!user) {
+          return next(createHttpError(401, 'Invalid or expired token'))
+        }
+        req.user = user
+        return next()
+      })
+      .catch(() => next(createHttpError(401, 'Invalid or expired token')))
+  } catch {
+    return next(createHttpError(401, 'Invalid or expired token'))
+  }
+}
+
+export function requireRole(roles = []) {
+  return (req, _res, next) => {
+    const role = req.user?.role
+    if (!role || (roles.length && !roles.includes(role))) {
+      return next(createHttpError(403, 'Insufficient permissions'))
+    }
+    return next()
+  }
+}

@@ -1,0 +1,65 @@
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { authApi } from '../services/authApi'
+import { clearAuthToken, getAuthToken, setAuthToken } from '../services/authStore'
+
+const AuthContext = createContext(null)
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null)
+  const [status, setStatus] = useState('checking')
+
+  useEffect(() => {
+    const token = getAuthToken()
+    if (!token) {
+      setStatus('guest')
+      return
+    }
+
+    authApi
+      .me()
+      .then((data) => {
+        setUser(data.user)
+        setStatus('authed')
+      })
+      .catch(() => {
+        clearAuthToken()
+        setUser(null)
+        setStatus('guest')
+      })
+  }, [])
+
+  const login = async (email, password) => {
+    const data = await authApi.login({ email, password })
+    setAuthToken(data.token)
+    setUser(data.user)
+    setStatus('authed')
+    return data.user
+  }
+
+  const logout = () => {
+    clearAuthToken()
+    setUser(null)
+    setStatus('guest')
+  }
+
+  const value = useMemo(
+    () => ({
+      user,
+      status,
+      isAuthed: status === 'authed',
+      login,
+      logout,
+    }),
+    [user, status]
+  )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext)
+  if (!ctx) {
+    throw new Error('useAuth must be used within AuthProvider')
+  }
+  return ctx
+}

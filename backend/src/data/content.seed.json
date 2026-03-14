@@ -1,0 +1,298 @@
+﻿{
+  "sections": [
+    {
+      "slug": "khabarona",
+      "title": "خبرونه",
+      "description": "د ورځنیو مهمو پېښو تازه پوښښ او اعلانونه.",
+      "articles": [
+        { "title": "ډمی لیکنه ۱", "excerpt": "دا یوازې د نمونې لپاره ده.", "href": "#" },
+        { "title": "ډمی لیکنه ۲", "excerpt": "دا یوازې د نمونې لپاره ده.", "href": "#" }
+      ],
+      "gallery": ["د غونډې انځور 1", "د غونډې انځور 2", "د اعلان پوستر"],
+      "videos": [{ "title": "د اوونۍ ویډیويي لنډیز", "duration": "08:24" }],
+      "links": [
+        { "label": "ټولې خبرپاڼې", "href": "#" },
+        { "label": "د ګډون فورم", "href": "#" },
+        { "label": "ارشیف", "href": "#" }
+      ]
+    },
+    {
+      "slug": "farhangi-lekane",
+      "title": "فرهنګي لیکنې",
+      "description": "د کلتور، ادب او ټولنیزو ارزښتونو تحلیل.",
+      "articles": [
+        { "title": "ډمی لیکنه ۱", "excerpt": "دا یوازې د نمونې لپاره ده.", "href": "#" },
+        { "title": "ډمی لیکنه ۲", "excerpt": "دا یوازې د نمونې لپاره ده.", "href": "#" }
+      ],
+      "gallery": ["کلتوري نندارتون", "هنري ماښام", "کتاب لوستنه"],
+      "videos": [{ "title": "فرهنګي مرکه", "duration": "12:10" }],
+      "links": [
+        { "label": "فرهنګي ارشیف", "href": "#" },
+        { "label": "لیکوالان", "href": "#" },
+        { "label": "د موضوعاتو لړ", "href": "#" }
+      ]
+    },
+    {
+      "slug": "elmi-lekane",
+      "title": "علمي لیکنې",
+      "description": "تحقیقي مقالې، اکاډمیک یادښتونه او علمي بحثونه.",
+      "articles": [
+        { "title": "ډمی لیکنه ۱", "excerpt": "دا یوازې د نمونې لپاره ده.", "href": "#" },
+        { "title": "ډمی لیکنه ۲", "excerpt": "دا یوازې د نمونې لپاره ده.", "href": "#" }
+      ],
+      "gallery": ["د څېړنې ورکشاپ", "علمي سیمینار", "کتابتون"],
+      "videos": [{ "title": "علمي بحث", "duration": "15:42" }],
+      "links": [
+        { "label": "څېړنیز PDF", "href": "#" },
+        { "label": "ډاټا او سرچینې", "href": "#" },
+        { "label": "اکاډمیک لارښود", "href": "#" }
+      ]
+    },
+    {
+      "slug": "dabistan-majalla",
+      "title": "دبستان مجله",
+      "description": "د مجلې ځانګړې ګڼه، سرمقاله او منتخبې لیکنې.",
+      "articles": [
+        { "title": "ډمی لیکنه ۱", "excerpt": "دا یوازې د نمونې لپاره ده.", "href": "#" },
+        { "title": "ډمی لیکنه ۲", "excerpt": "دا یوازې د نمونې لپاره ده.", "href": "#" }
+      ],
+      "gallery": ["د مجلې پوښ", "چاپي نسخه", "ټیم غونډه"],
+      "videos": [{ "title": "د مجلې پېژندنه", "duration": "06:58" }],
+      "links": [
+        { "label": "ټولې ګڼې", "href": "#" },
+        { "label": "سبسکرایب", "href": "#" },
+        { "label": "ډاونلوډ", "href": "#" }
+      ]
+    },
+    {
+      "slug": "dabistan-podcast",
+      "title": "دبستان پاډکاسټ",
+      "description": "غږیز اپیزودونه، مرکې او موضوعي لړۍ.",
+      "articles": [
+        { "title": "ډمی لیکنه ۱", "excerpt": "دا یوازې د نمونې لپاره ده.", "href": "#" },
+        { "title": "ډمی لیکنه ۲", "excerpt": "دا یوازې د نمونې لپاره ده.", "href": "#" }
+      ],
+      "gallery": ["سټوډیو", "مېلمانه", "غږیز تجهیزات"],
+      "videos": [{ "title": "ویډیو پاډکاسټ نمونه", "duration": "21:35" }],
+      "links": [
+        { "label": "Spotify لینک", "href": "#" },
+        { "label": "YouTube پلی لیست", "href": "#" },
+        { "label": "RSS Feed", "href": "#" }
+      ]
+    },
+    {
+      "slug": "seerat-conference",
+      "title": "د سیرت کلنی کنفرانس",
+      "description": "د کنفرانس اجنډا، ویناوې او د ګډون معلومات.",
+      "articles": [
+        { "title": "ډمی لیکنه ۱", "excerpt": "دا یوازې د نمونې لپاره ده.", "href": "#" },
+        { "title": "ډمی لیکنه ۲", "excerpt": "دا یوازې د نمونې لپاره ده.", "href": "#" }
+      ],
+      "gallery": ["د کنفرانس تالار", "د ویناوالو پینل", "د ګډونوالو انځور"],
+      "videos": [{ "title": "د کنفرانس بشپړه وینا", "duration": "32:10" }],
+      "links": [
+        { "label": "ثبت‌نام", "href": "#" },
+        { "label": "ویناوال", "href": "#" },
+        { "label": "کنفرانس ارشیف", "href": "#" }
+      ]
+    }
+  ],
+  "books": [
+    {
+      "slug": "talif",
+      "title": "تاليف",
+      "description": "اصلي لیکنې او بنسټیز کتابونه.",
+      "articles": [
+        { "title": "نوې تالیف شوې ټولګه", "excerpt": "د ادبي او فکري مقالو نوې مجموعه.", "href": "#" },
+        { "title": "لیکوال پېژندنه", "excerpt": "د کتاب د لیکوال فکر او سبک.", "href": "#" }
+      ],
+      "gallery": ["د کتاب پوښ", "د لیکوال انځور", "د چاپ انځور"],
+      "videos": [{ "title": "د کتاب معرفي ویډیو", "duration": "05:11" }],
+      "links": [
+        { "label": "آنلاین لوستل", "href": "#" },
+        { "label": "PDF", "href": "#" },
+        { "label": "پېرود", "href": "#" }
+      ]
+    },
+    {
+      "slug": "tehrna",
+      "title": "څېړنه",
+      "description": "تحقیقي کتابونه او علمي موندنې.",
+      "articles": [
+        { "title": "میداني څېړنه", "excerpt": "د ټولنیزو موضوعاتو پر بنسټیزو ارقامو تحلیل.", "href": "#" },
+        { "title": "نتیجې او سپارښتنې", "excerpt": "د پالیسۍ او عملي کار لپاره وړاندیزونه.", "href": "#" }
+      ],
+      "gallery": ["څېړنیز چارټ", "میداني کار", "راپور"],
+      "videos": [{ "title": "څېړنیز پریزنټېشن", "duration": "09:40" }],
+      "links": [
+        { "label": "راپور ډاونلوډ", "href": "#" },
+        { "label": "ریفرنسونه", "href": "#" },
+        { "label": "اړوند لیکنې", "href": "#" }
+      ]
+    },
+    {
+      "slug": "zbarha",
+      "title": "ژباړه",
+      "description": "له نورو ژبو څخه ژباړل شوي مهم اثار.",
+      "articles": [
+        { "title": "نوې ژباړه", "excerpt": "نړیوال فکرونه په روانه پښتو ژبه.", "href": "#" },
+        { "title": "ژباړن سره مرکه", "excerpt": "د ژباړې ستونزې او حل لارې.", "href": "#" }
+      ],
+      "gallery": ["اصل کتاب", "ژباړل شوې نسخه", "ژباړن"],
+      "videos": [{ "title": "د ژباړې بهیر", "duration": "07:55" }],
+      "links": [
+        { "label": "کتاب کتنه", "href": "#" },
+        { "label": "د ژباړن پروفایل", "href": "#" },
+        { "label": "نور ژباړل شوي کتابونه", "href": "#" }
+      ]
+    },
+    {
+      "slug": "mukhtana",
+      "title": "مخکتنه",
+      "description": "د چاپ څخه مخکې د کتابونو پېژندنه.",
+      "articles": [
+        { "title": "راتلونکی کتاب", "excerpt": "د موضوع، فصلونو او موخې لنډه پېژندنه.", "href": "#" },
+        { "title": "د لیکوال خبرې", "excerpt": "کتاب ولې لیکل شوی او چا ته ګټه رسوي.", "href": "#" }
+      ],
+      "gallery": ["لومړنی مسوده", "ایډیټ غونډه", "ډیزاین نمونه"],
+      "videos": [{ "title": "مخکتنې ویډیو", "duration": "04:46" }],
+      "links": [
+        { "label": "د مخکتنې فایل", "href": "#" },
+        { "label": "نظر ورکړئ", "href": "#" },
+        { "label": "د خپرېدو نېټه", "href": "#" }
+      ]
+    },
+    {
+      "slug": "stainaghonda",
+      "title": "ستاینغونډه",
+      "description": "د کتابونو د معرفۍ او ستاینې ځانګړې غونډې.",
+      "articles": [
+        { "title": "د ستاینغونډې راپور", "excerpt": "د غونډې مهمې ویناوې او ګډونوال.", "href": "#" },
+        { "title": "د کتاب اغېز", "excerpt": "کتاب په ټولنه کې کوم بدلون راوستی؟", "href": "#" }
+      ],
+      "gallery": ["غونډه", "د کتاب مخکتنه", "ویناوال"],
+      "videos": [{ "title": "د ستاینغونډې ثبت", "duration": "18:02" }],
+      "links": [
+        { "label": "غونډې انځورونه", "href": "#" },
+        { "label": "وینا بشپړ متن", "href": "#" },
+        { "label": "راتلونکې غونډه", "href": "#" }
+      ]
+    }
+  ],
+  "categories": [
+    { "slug": "afghanistan", "title": "افغانستان", "description": "د افغانستان تازه خبرونه." },
+    { "slug": "world", "title": "نړۍ", "description": "نړیوالې پېښې او راپورونه." },
+    { "slug": "economy", "title": "اقتصاد", "description": "بازار، سوداګري او مالي خبرونه." },
+    { "slug": "sports", "title": "ورزش", "description": "د ورزش تازه خبرونه." }
+  ],
+  "posts": [
+    {
+      "title": "د کابل د ښار تازه راپور",
+      "slug": "kabul-update",
+      "category": "afghanistan",
+      "excerpt": "د ښار د امنیت او خدماتو په اړه لنډ راپور.",
+      "image": "https://placehold.co/800x500",
+      "published_at": "2026-03-13T08:00:00+04:30",
+      "author": "خبریال الف",
+      "content": "دا یو نمونه خبر دی چې د کابل ښار د مهمو پرمختګونو لنډه کیسه وړاندې کوي."
+    },
+    {
+      "title": "اقتصادي شاخصونه د څه خبر ورکوي؟",
+      "slug": "economic-indicators",
+      "category": "economy",
+      "excerpt": "د بازار حرکت او د اسعارو بدلونونه.",
+      "image": "https://placehold.co/800x500",
+      "published_at": "2026-03-13T09:15:00+04:30",
+      "author": "خبریال ب",
+      "content": "په دې راپور کې د اقتصاد د وروستیو شاخصونو لنډ تحلیل وړاندې شوی."
+    },
+    {
+      "title": "نړیواله غونډه: مهم ټکي",
+      "slug": "global-summit-highlights",
+      "category": "world",
+      "excerpt": "د نړیوالې غونډې مهمې پرېکړې.",
+      "image": "https://placehold.co/800x500",
+      "published_at": "2026-03-13T10:30:00+04:30",
+      "author": "خبریال ج",
+      "content": "د غونډې د پایلو او ګډونوالو پر مهمو څرګندونو لنډ نظر."
+    },
+    {
+      "title": "د افغانستان د ځوانانو نوښتونه",
+      "slug": "youth-initiatives",
+      "category": "afghanistan",
+      "excerpt": "ځوانانو د ټولنې د پرمختګ لپاره نوې لارې وړاندې کړې.",
+      "image": "https://placehold.co/800x500",
+      "published_at": "2026-03-13T11:00:00+04:30",
+      "author": "خبریال د",
+      "content": "د ځوانانو نوښتونه د ټولنې لپاره نوې انرژي رامنځته کوي."
+    },
+    {
+      "title": "ورزشي سیالۍ او پایلې",
+      "slug": "sports-results",
+      "category": "sports",
+      "excerpt": "د اونۍ د ورزشي سیالیو لنډ راپور.",
+      "image": "https://placehold.co/800x500",
+      "published_at": "2026-03-13T12:30:00+04:30",
+      "author": "خبریال هـ",
+      "content": "د وروستیو سیالیو مهمې پایلې او لوبډلو وضعیت."
+    },
+    {
+      "title": "بازار کې د سرو زرو نرخونه",
+      "slug": "gold-prices",
+      "category": "economy",
+      "excerpt": "د سرو زرو د نرخونو وروستی وضعیت.",
+      "image": "https://placehold.co/800x500",
+      "published_at": "2026-03-13T13:20:00+04:30",
+      "author": "خبریال و",
+      "content": "د سرو زرو نرخونه د نړیوال بازار له بدلونونو اغېزمن شوي."
+    }
+  ],
+  "videos": [
+    {
+      "title": "د ورځې ویډیويي لنډیز",
+      "url": "https://example.com/video/daily-brief",
+      "image": "https://placehold.co/800x450",
+      "category": "afghanistan",
+      "duration": "04:30",
+      "published_at": "2026-03-13T08:30:00+04:30",
+      "description": "د ورځې مهم خبرونه په لنډه ویډیو کې."
+    },
+    {
+      "title": "ورزشي ځانګړې مرکه",
+      "url": "https://example.com/video/sports-interview",
+      "image": "https://placehold.co/800x450",
+      "category": "sports",
+      "duration": "06:20",
+      "published_at": "2026-03-13T12:45:00+04:30",
+      "description": "د لوبغاړو سره د سیالیو په اړه مرکه."
+    }
+  ],
+  "most_read": [
+    { "title": "د کابل د ښار تازه راپور", "slug": "kabul-update", "category": "afghanistan", "published_at": "2026-03-13T08:00:00+04:30", "sort_order": 1 },
+    { "title": "اقتصادي شاخصونه د څه خبر ورکوي؟", "slug": "economic-indicators", "category": "economy", "published_at": "2026-03-13T09:15:00+04:30", "sort_order": 2 },
+    { "title": "ورزشي سیالۍ او پایلې", "slug": "sports-results", "category": "sports", "published_at": "2026-03-13T12:30:00+04:30", "sort_order": 3 }
+  ],
+  "weather": [
+    { "location": "کابل", "temperature": 12, "condition": "نیمه ورېځ", "updated_at": "2026-03-13T07:45:00+04:30" }
+  ],
+  "exchange_rates": [
+    { "base": "AFN", "currency": "USD", "rate": 0.014, "updated_at": "2026-03-13T07:45:00+04:30" },
+    { "base": "AFN", "currency": "EUR", "rate": 0.013, "updated_at": "2026-03-13T07:45:00+04:30" },
+    { "base": "AFN", "currency": "PKR", "rate": 4.2, "updated_at": "2026-03-13T07:45:00+04:30" }
+  ],
+  "nav": [
+    { "key": "home", "path": "/", "label": "کورپاڼه" },
+    { "key": "nav-khabarona", "path": "/khabarona", "label": "خبرونه" },
+    { "key": "nav-farhangi-lekane", "path": "/farhangi-lekane", "label": "فرهنګي لیکنې" },
+    { "key": "nav-elmi-lekane", "path": "/elmi-lekane", "label": "علمي لیکنې" },
+    { "key": "nav-dabistan-majalla", "path": "/dabistan-majalla", "label": "دبستان مجله" },
+    { "key": "nav-dabistan-podcast", "path": "/dabistan-podcast", "label": "دبستان پاډکاسټ" },
+    { "key": "nav-seerat-conference", "path": "/seerat-conference", "label": "د سیرت کلنی کنفرانس" },
+    { "key": "books", "path": "/books", "label": "کتابونه" }
+  ],
+  "contacts": [
+    { "id": "facebook", "label": "Facebook", "href": "https://www.facebook.com/share/18VkPvg8kn/" },
+    { "id": "x", "label": "X", "href": "https://x.com/Dabistan011" },
+    { "id": "telegram", "label": "Telegram", "href": "https://t.me/Dabistan011" }
+  ]
+}
