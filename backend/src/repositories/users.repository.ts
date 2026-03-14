@@ -16,11 +16,40 @@ export interface ListUsersResult {
 }
 
 export async function findUserByEmail(email: string): Promise<(IUser & { password_hash: string }) | null> {
-  return User.findOne({ email }).populate('role').select('+password_hash').lean() as any
+  try {
+    return await User.findOne({ email }).populate('role').select('+password_hash').lean() as any
+  } catch (error: any) {
+    if (error.name === 'CastError' && error.path === 'role') {
+      // Fallback for legacy string role data
+      const rawUser = await User.findOne({ email }).select('+password_hash').lean() as any
+      if (rawUser && typeof rawUser.role === 'string') {
+        const roleDoc = await findRoleBySlug(rawUser.role)
+        if (roleDoc) {
+          rawUser.role = roleDoc
+        }
+      }
+      return rawUser
+    }
+    throw error
+  }
 }
 
 export async function getUserById(id: number): Promise<IUser | null> {
-  return User.findOne({ id }).populate('role').lean()
+  try {
+    return await User.findOne({ id }).populate('role').lean()
+  } catch (error: any) {
+    if (error.name === 'CastError' && error.path === 'role') {
+      const rawUser = await User.findOne({ id }).lean() as any
+      if (rawUser && typeof rawUser.role === 'string') {
+        const roleDoc = await findRoleBySlug(rawUser.role)
+        if (roleDoc) {
+          rawUser.role = roleDoc
+        }
+      }
+      return rawUser
+    }
+    throw error
+  }
 }
 
 export async function listUsers(options: ListUsersOptions = {}): Promise<IUser[] | ListUsersResult> {

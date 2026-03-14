@@ -14,14 +14,23 @@ export async function ensureAdminUser() {
 
   const normalizedEmail = env.adminEmail.trim().toLowerCase()
   const existing = await User.findOne({ email: normalizedEmail })
-  if (existing) {
-    console.log('Admin user already exists:', normalizedEmail)
-    return
-  }
 
   const adminRole = await findRoleBySlug('admin')
   if (!adminRole) {
     throw new Error('Admin role not found after seeding defaults')
+  }
+
+  if (existing) {
+    // Migrate legacy string role if necessary
+    if (typeof existing.role === 'string') {
+      console.log('Migrating legacy role for admin:', normalizedEmail)
+      await User.updateOne(
+        { _id: existing._id },
+        { $set: { role: (adminRole as any)._id } }
+      )
+    }
+    console.log('Admin user already exists:', normalizedEmail)
+    return
   }
 
   const id = await getNextId('users')
