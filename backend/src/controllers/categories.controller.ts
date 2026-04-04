@@ -1,7 +1,28 @@
 import { Request, Response, NextFunction } from 'express'
+import { isValidObjectId } from 'mongoose'
 import { Category } from '../models/Category.js'
 import { createHttpError, requireFields } from '../utils/http.js'
 import { slugify } from '../utils/slugify.js'
+
+async function findCategoryByIdentifier(rawIdentifier: string) {
+  const identifier = (rawIdentifier ?? '').trim()
+  if (!identifier || identifier === 'undefined' || identifier === 'null') {
+    throw createHttpError(400, 'Invalid category identifier')
+  }
+
+  if (isValidObjectId(identifier)) {
+    const byObjectId = await Category.findById(identifier)
+    if (byObjectId) return byObjectId
+  }
+
+  const numeric = Number(identifier)
+  if (!Number.isNaN(numeric) && Number.isFinite(numeric)) {
+    const byNumericId = await Category.findOne({ id: numeric })
+    if (byNumericId) return byNumericId
+  }
+
+  return Category.findOne({ slug: identifier })
+}
 
 export async function listCategories(req: Request, res: Response, next: NextFunction) {
   try {
@@ -49,7 +70,7 @@ export async function updateCategory(req: Request, res: Response, next: NextFunc
     const { name, slug, description } = (req.body ?? {}) as any
     requireFields({ name }, ['name'])
 
-    const category = await Category.findById(req.params.id)
+    const category = await findCategoryByIdentifier(req.params.id as string)
     if (!category) {
       throw createHttpError(404, 'Category not found')
     }
@@ -75,7 +96,7 @@ export async function updateCategory(req: Request, res: Response, next: NextFunc
 
 export async function deleteCategory(req: Request, res: Response, next: NextFunction) {
   try {
-    const category = await Category.findById(req.params.id)
+    const category = await findCategoryByIdentifier(req.params.id as string)
     if (!category) {
       throw createHttpError(404, 'Category not found')
     }

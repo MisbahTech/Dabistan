@@ -7,11 +7,13 @@ import {
 } from '../services/postsApi'
 import { useUploadMutation } from '../services/uploadsApi'
 import { useCategoriesQuery } from '../services/categoriesApi'
+import { useAuth } from '../context/useAuth'
 
 const emptyForm = {
   title: '',
   slug: '',
   category: '',
+  sectionSlug: 'news',
   status: 'draft',
   excerpt: '',
   content: '',
@@ -20,7 +22,21 @@ const emptyForm = {
   publishedAt: '',
 }
 
+function getPostRowId(post) {
+  return post?.id ?? post?._id ?? null
+}
+
+function toSlug(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+}
+
 export default function PostsPage() {
+  const { user } = useAuth()
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
   const [error, setError] = useState('')
@@ -49,10 +65,21 @@ export default function PostsPage() {
     event.preventDefault()
     setError('')
     try {
+      const fallbackAuthor = user?.email || user?.name || 'admin'
+      const slug = form.slug.trim() || toSlug(form.title)
       const payload = {
-        ...form,
-        publishedAt: form.publishedAt || null,
+        title: form.title,
+        slug,
+        category: form.category || '',
+        section_slug: form.sectionSlug || 'news',
+        status: form.status,
+        excerpt: form.excerpt || '',
+        content: form.content,
+        image: form.featuredImage || '',
+        published_at: form.publishedAt || null,
+        author: fallbackAuthor,
       }
+
       if (editingId) {
         await updatePost.mutateAsync({ id: editingId, payload })
       } else {
@@ -66,21 +93,35 @@ export default function PostsPage() {
   }
 
   const handleEdit = (post) => {
-    setEditingId(post.id)
+    const rowId = getPostRowId(post)
+    if (!rowId) {
+      setError('This post cannot be edited because it has no valid ID.')
+      return
+    }
+
+    setEditingId(rowId)
     setForm({
       title: post.title ?? '',
       slug: post.slug ?? '',
       category: post.category ?? '',
+      sectionSlug: post.section_slug ?? post.sectionSlug ?? 'news',
       status: post.status ?? 'draft',
       excerpt: post.excerpt ?? '',
       content: post.content ?? '',
-      featuredImage: post.featuredImage ?? '',
+      featuredImage: post.image ?? post.featuredImage ?? '',
       attachment: post.attachment ?? null,
-      publishedAt: post.publishedAt ? post.publishedAt.slice(0, 16) : '',
+      publishedAt: (post.published_at ?? post.publishedAt)
+        ? (post.published_at ?? post.publishedAt).slice(0, 16)
+        : '',
     })
   }
 
   const handleDelete = async (postId) => {
+    if (!postId) {
+      setError('This post cannot be deleted because it has no valid ID.')
+      return
+    }
+
     if (!window.confirm('Delete this post?')) {
       return
     }
@@ -164,11 +205,21 @@ export default function PostsPage() {
             />
             <datalist id="category-options">
               {categories.map((cat) => (
-                <option key={cat.id} value={cat.slug}>
+                <option key={cat.id ?? cat._id ?? cat.slug} value={cat.slug}>
                   {cat.name}
                 </option>
               ))}
             </datalist>
+          </label>
+          <label>
+            <span>Section Slug</span>
+            <input
+              type="text"
+              value={form.sectionSlug}
+              onChange={(event) => setForm((prev) => ({ ...prev, sectionSlug: event.target.value }))}
+              placeholder="news"
+              required
+            />
           </label>
           <label>
             <span>Status</span>
@@ -268,27 +319,32 @@ export default function PostsPage() {
             <span>Author</span>
             <span>Actions</span>
           </div>
-          {posts.map((post) => (
-            <div key={post.id} className="table-row cols-5">
-              <span>{post.title}</span>
-              <span className={`badge ${post.status}`}>{post.status}</span>
-              <span>{post.category || '-'}</span>
-              <span>{post.author?.name ?? '-'}</span>
-              <div className="actions">
-                {post.status === 'published' ? (
-                  <a className="btn ghost" href={`/post/${post.slug}`} target="_blank" rel="noreferrer">
-                    View
-                  </a>
-                ) : null}
-                <button className="btn ghost" type="button" onClick={() => handleEdit(post)}>
-                  Edit
-                </button>
-                <button className="btn danger" type="button" onClick={() => handleDelete(post.id)}>
-                  Delete
-                </button>
+          {posts.map((post, index) => {
+            const rowId = getPostRowId(post)
+            const rowKey = rowId ?? `${post.slug ?? 'post'}-${index}`
+
+            return (
+              <div key={rowKey} className="table-row cols-5">
+                <span>{post.title}</span>
+                <span className={`badge ${post.status}`}>{post.status}</span>
+                <span>{post.category || '-'}</span>
+                <span>{typeof post.author === 'string' ? post.author : post.author?.name ?? '-'}</span>
+                <div className="actions">
+                  {post.status === 'published' ? (
+                    <a className="btn ghost" href={`/post/${post.slug}`} target="_blank" rel="noreferrer">
+                      View
+                    </a>
+                  ) : null}
+                  <button className="btn ghost" type="button" onClick={() => handleEdit(post)} disabled={!rowId}>
+                    Edit
+                  </button>
+                  <button className="btn danger" type="button" onClick={() => handleDelete(rowId)} disabled={!rowId}>
+                    Delete
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import siteLogo from '../assets/logo.png'
 
 const navItems = [
@@ -19,7 +19,7 @@ export default function DashboardLayout({ children }) {
   const { user, logout } = useAuth()
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" dir="ltr">
       <aside className="sidebar">
         <div className="sidebar-brand">
           <img src={siteLogo} alt="Dabistan" />

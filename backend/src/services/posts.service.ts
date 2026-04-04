@@ -6,7 +6,7 @@ export const postsService = {
     return postsRepository.listPosts(options)
   },
 
-  getById(id: number): Promise<IPost | null> {
+  getById(id: postsRepository.PostIdentifier): Promise<IPost | null> {
     return postsRepository.getPostById(id)
   },
 
@@ -18,11 +18,11 @@ export const postsService = {
     return postsRepository.createPost(payload)
   },
 
-  update(id: number, payload: Partial<postsRepository.CreatePostData>): Promise<IPost | null> {
+  update(id: postsRepository.PostIdentifier, payload: Partial<postsRepository.CreatePostData>): Promise<IPost | null> {
     return postsRepository.updatePost(id, payload)
   },
 
-  remove(id: number): Promise<IPost | null> {
+  remove(id: postsRepository.PostIdentifier): Promise<IPost | null> {
     return postsRepository.deletePost(id)
   },
 }

@@ -9,18 +9,21 @@ import {
 const emptyForm = { name: '', slug: '', description: '' }
 
 const defaultCategories = [
-  { name: '??????' },
-  { name: '?????? ?????' },
-  { name: '???? ?????' },
-  { name: '?????? ????' },
-  { name: '?????? ???????' },
-  { name: '? ???? ???? ???????' },
-  { name: '???????' },
-  { name: '?????' },
-  { name: '?????' },
-  { name: '?????' },
-  { name: '??????' },
-  { name: '??????????' },
+  { name: 'خبرونه' },
+  { name: 'فرهنګي لیکنې' },
+  { name: 'علمي لیکنې' },
+  { name: 'دبستان مجله' },
+  { name: 'دبستان پاډکاسټ' },
+  { name: 'سیرت النبي کانفرانس', slug: 'seerat-al-nabi-conference' },
+  { name: 'ادبي کانفرانس', slug: 'adabi-conference' },
+  { name: 'علمی کانفرانس', slug: 'elmi-conference' },
+  { name: 'فرهنګي کانفرانس', slug: 'farhangi-conference' },
+  { name: 'کتابونه' },
+  { name: 'تالیف' },
+  { name: 'څېړنه' },
+  { name: 'ژباړه' },
+  { name: 'مخکتنه' },
+  { name: 'ستاینغونډه' },
 ]
 
 export default function CategoriesPage() {
@@ -38,6 +41,8 @@ export default function CategoriesPage() {
   const isLoading = categoriesQuery.isLoading
   const isSaving =
     createCategory.isPending || updateCategory.isPending || deleteCategory.isPending
+
+  const getCategoryIdentifier = (item) => item?.id ?? item?._id ?? item?.slug ?? ''
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -57,7 +62,7 @@ export default function CategoriesPage() {
   }
 
   const handleEdit = (item) => {
-    setEditingId(item.id)
+    setEditingId(getCategoryIdentifier(item))
     setForm({
       name: item.name ?? '',
       slug: item.slug ?? '',
@@ -66,6 +71,10 @@ export default function CategoriesPage() {
   }
 
   const handleDelete = async (id) => {
+    if (!id) {
+      setError('Category id is missing')
+      return
+    }
     if (!window.confirm('Delete this category?')) {
       return
     }
@@ -89,6 +98,7 @@ export default function CategoriesPage() {
         await createCategory.mutateAsync({
           name: item.name,
           description: item.description ?? '',
+          ...(item.slug ? { slug: item.slug } : {}),
         })
         created += 1
       } catch (err) {
@@ -189,21 +199,24 @@ export default function CategoriesPage() {
             <span>Description</span>
             <span>Actions</span>
           </div>
-          {items.map((item) => (
-            <div key={item.id} className="table-row cols-4">
-              <span>{item.name}</span>
-              <span>{item.slug}</span>
-              <span>{item.description || '-'}</span>
-              <div className="actions">
-                <button className="btn ghost" type="button" onClick={() => handleEdit(item)}>
-                  Edit
-                </button>
-                <button className="btn danger" type="button" onClick={() => handleDelete(item.id)}>
-                  Delete
-                </button>
+          {items.map((item) => {
+            const categoryId = getCategoryIdentifier(item)
+            return (
+              <div key={categoryId || item.slug || item.name} className="table-row cols-4">
+                <span>{item.name}</span>
+                <span>{item.slug}</span>
+                <span>{item.description || '-'}</span>
+                <div className="actions">
+                  <button className="btn ghost" type="button" onClick={() => handleEdit(item)} disabled={!categoryId}>
+                    Edit
+                  </button>
+                  <button className="btn danger" type="button" onClick={() => handleDelete(categoryId)} disabled={!categoryId}>
+                    Delete
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

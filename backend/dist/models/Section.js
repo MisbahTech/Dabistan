@@ -1,0 +1,19 @@
+import mongoose, { Schema } from 'mongoose';
+const SectionSchema = new Schema({
+    id: { type: Number, unique: true },
+    slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    title: { type: String, required: true, trim: true },
+    description: { type: String, default: '' },
+}, {
+    collection: 'sections',
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
+    toJSON: {
+        transform: (_doc, ret) => {
+            delete ret._id;
+            delete ret.__v;
+            return ret;
+        },
+    },
+});
+export const Section = mongoose.model('Section', SectionSchema);
+//# sourceMappingURL=Section.js.map

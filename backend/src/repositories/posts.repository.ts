@@ -1,6 +1,7 @@
 import { Post, IPost } from '../models/Post.js'
 import { getNextId } from '../utils/counter.js'
 import { toSearchRegex } from '../utils/mongo.js'
+import { isValidObjectId } from 'mongoose'
 
 export interface ListPostsOptions {
   category?: string
@@ -14,6 +15,29 @@ export interface ListPostsOptions {
 export interface ListPostsResult {
   data: IPost[]
   total?: number
+}
+
+export type PostIdentifier = number | string
+
+function resolvePostFilter(identifier: PostIdentifier): Record<string, unknown> | null {
+  if (typeof identifier === 'number' && Number.isFinite(identifier)) {
+    return { id: identifier }
+  }
+
+  const value = String(identifier ?? '').trim()
+  if (!value || value === 'undefined' || value === 'null') {
+    return null
+  }
+
+  if (/^\d+$/.test(value)) {
+    return { id: Number(value) }
+  }
+
+  if (isValidObjectId(value)) {
+    return { _id: value }
+  }
+
+  return null
 }
 
 export async function listPosts(options: ListPostsOptions = {}): Promise<IPost[] | ListPostsResult> {
@@ -48,8 +72,12 @@ export async function listPosts(options: ListPostsOptions = {}): Promise<IPost[]
   return data
 }
 
-export async function getPostById(id: number): Promise<IPost | null> {
-  return Post.findOne({ id }).lean()
+export async function getPostById(id: PostIdentifier): Promise<IPost | null> {
+  const filter = resolvePostFilter(id)
+  if (!filter) {
+    return null
+  }
+  return Post.findOne(filter).lean()
 }
 
 export async function getPostBySlug(slug: string): Promise<IPost | null> {
@@ -85,9 +113,14 @@ export async function createPost({ title, slug, category, section_slug, excerpt,
   return post.toJSON()
 }
 
-export async function updatePost(id: number, data: Partial<CreatePostData>): Promise<IPost | null> {
+export async function updatePost(id: PostIdentifier, data: Partial<CreatePostData>): Promise<IPost | null> {
+  const filter = resolvePostFilter(id)
+  if (!filter) {
+    return null
+  }
+
   return Post.findOneAndUpdate(
-    { id },
+    filter,
     {
       $set: {
         ...data,
@@ -99,6 +132,10 @@ export async function updatePost(id: number, data: Partial<CreatePostData>): Pro
   ).lean()
 }
 
-export async function deletePost(id: number): Promise<IPost | null> {
-  return Post.findOneAndDelete({ id }).lean()
+export async function deletePost(id: PostIdentifier): Promise<IPost | null> {
+  const filter = resolvePostFilter(id)
+  if (!filter) {
+    return null
+  }
+  return Post.findOneAndDelete(filter).lean()
 }

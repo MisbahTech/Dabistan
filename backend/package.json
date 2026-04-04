@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "seed": "tsx src/db/seed.ts",
-    "create-admin": "tsx src/utils/seedAdmin.ts"
+    "create-admin": "tsx src/utils/seedAdmin.ts",
+    "fix-encoding": "node scripts/fix-mojibake.mjs",
+    "fix-encoding:write": "node scripts/fix-mojibake.mjs --write"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

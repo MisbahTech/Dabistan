@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { postsService } from '../services/posts.service.js'
-import { ensureFound, parseId, requireBody, requireFieldsFor } from '../utils/handlers.js'
+import { ensureFound, requireBody, requireFieldsFor } from '../utils/handlers.js'
 import { formatPaginatedResponse, parsePagination } from '../utils/pagination.js'
 
 export async function listPosts(req: Request, res: Response, next: NextFunction) {
@@ -33,7 +33,7 @@ export async function listPosts(req: Request, res: Response, next: NextFunction)
 
 export async function getPost(req: Request, res: Response, next: NextFunction) {
   try {
-    const id = parseId(req.params.id as string)
+    const id = req.params.id as string
     const data = await postsService.getById(id)
     ensureFound(data, 'Post')
     res.json(data)
@@ -55,7 +55,7 @@ export async function createPost(req: Request, res: Response, next: NextFunction
 
 export async function updatePost(req: Request, res: Response, next: NextFunction) {
   try {
-    const id = parseId(req.params.id as string)
+    const id = req.params.id as string
     requireBody(req)
     requireFieldsFor(req.body, ['section_slug', 'title', 'content'])
     const data = await postsService.update(id, req.body)
@@ -68,7 +68,7 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
 
 export async function deletePost(req: Request, res: Response, next: NextFunction) {
   try {
-    const id = parseId(req.params.id as string)
+    const id = req.params.id as string
     const data = await postsService.remove(id)
     ensureFound(data, 'Post')
     res.status(204).send()

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { useForgotPasswordMutation, useResetPasswordMutation } from '../services/authApi'
 import siteLogo from '../assets/logo.png'
 
@@ -89,7 +89,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-page">
+    <div className="login-page" dir="ltr">
       <div className="login-card">
         <aside className="login-brand">
           <img src={siteLogo} alt="Dabistan logo" />
@@ -250,3 +250,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

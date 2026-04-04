@@ -10,9 +10,15 @@ export const categoriesApi = {
     return postJSON('/categories', payload)
   },
   update(id, payload) {
+    if (!id || id === 'undefined' || id === 'null') {
+      throw new Error('Invalid category id for update')
+    }
     return putJSON(`/categories/${id}`, payload)
   },
   remove(id) {
+    if (!id || id === 'undefined' || id === 'null') {
+      throw new Error('Invalid category id for delete')
+    }
     return deleteJSON(`/categories/${id}`)
   },
 }
