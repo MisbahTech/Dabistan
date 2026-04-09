@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { deleteJSON, getJSON, postJSON, putJSON } from './apiClient'
 import { queryKeys } from './queryKeys'
 
@@ -11,6 +11,9 @@ export const usersApi = {
   },
   update(id, payload) {
     return putJSON(`/users/${id}`, payload)
+  },
+  updatePassword(id, payload) {
+    return putJSON(`/users/${id}/password`, payload)
   },
   remove(id) {
     return deleteJSON(`/users/${id}`)
@@ -38,6 +41,16 @@ export function useUpdateUserMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, payload }) => usersApi.update(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users() })
+    },
+  })
+}
+
+export function useUpdateUserPasswordMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }) => usersApi.updatePassword(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users() })
     },

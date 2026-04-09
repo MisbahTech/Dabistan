@@ -1,11 +1,10 @@
 ﻿import { API_BASE_URL } from '../config/apiConfig'
 import { clearAuthToken, getAuthToken } from './authStore'
 
-// Connection helper: normalize API responses and surface useful errors.
-
 async function parseResponse(response) {
   if (!response.ok) {
-    if (response.status === 401) {
+    const hasToken = Boolean(getAuthToken())
+    if (response.status === 401 && hasToken) {
       clearAuthToken()
       window.location.href = '/login'
     }
@@ -16,7 +15,7 @@ async function parseResponse(response) {
         details = ` - ${payload.message}`
       }
     } catch {
-      // ignore JSON parse errors
+      details = ''
     }
 
     const message = `Request failed: ${response.status} ${response.statusText}${details}`
@@ -30,7 +29,6 @@ async function parseResponse(response) {
   return response.json()
 }
 
-// Connection helper: inject auth token and custom headers.
 function buildHeaders(extra = {}) {
   const token = getAuthToken()
   return {
@@ -39,7 +37,6 @@ function buildHeaders(extra = {}) {
   }
 }
 
-// Connection helper: shared JSON request wrapper for the REST API.
 async function requestJSON(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: buildHeaders({
@@ -52,27 +49,22 @@ async function requestJSON(path, options = {}) {
   return parseResponse(response)
 }
 
-// Connection: read-only request.
 export function getJSON(path, options = {}) {
   return requestJSON(path, { method: 'GET', ...options })
 }
 
-// Connection: create request with JSON body.
 export function postJSON(path, body, options = {}) {
   return requestJSON(path, { method: 'POST', body: JSON.stringify(body), ...options })
 }
 
-// Connection: update request with JSON body.
 export function putJSON(path, body, options = {}) {
   return requestJSON(path, { method: 'PUT', body: JSON.stringify(body), ...options })
 }
 
-// Connection: delete request.
 export function deleteJSON(path, options = {}) {
   return requestJSON(path, { method: 'DELETE', ...options })
 }
 
-// Connection: file upload using multipart form data.
 export async function postFile(path, file) {
   const formData = new FormData()
   formData.append('file', file)

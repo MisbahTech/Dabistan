@@ -1,7 +1,22 @@
 import { Request, Response, NextFunction } from 'express'
 import { mostReadService } from '../services/mostRead.service.js'
 import { ensureFound, parseId, requireBody, requireFieldsFor } from '../utils/handlers.js'
+import { createHttpError } from '../utils/http.js'
 import { formatPaginatedResponse, parsePagination } from '../utils/pagination.js'
+
+function normalizeMostReadPayload(payload: any) {
+  const rank = Number(payload?.rank)
+  if (!Number.isFinite(rank) || rank < 1) {
+    throw createHttpError(400, 'Rank must be a positive number')
+  }
+
+  return {
+    title: String(payload?.title || '').trim(),
+    slug: String(payload?.slug || '').trim(),
+    rank,
+    published_at: payload?.published_at || payload?.publishedAt || null,
+  }
+}
 
 export async function listMostRead(req: Request, res: Response, next: NextFunction) {
   try {
@@ -43,8 +58,9 @@ export async function getMostRead(req: Request, res: Response, next: NextFunctio
 export async function createMostRead(req: Request, res: Response, next: NextFunction) {
   try {
     requireBody(req)
-    requireFieldsFor(req.body, ['title', 'href', 'views'])
-    const data = await mostReadService.create(req.body)
+    const payload = normalizeMostReadPayload(req.body)
+    requireFieldsFor(payload, ['title', 'slug', 'rank'])
+    const data = await mostReadService.create(payload)
     res.status(201).json(data)
   } catch (error) {
     next(error)
@@ -55,8 +71,9 @@ export async function updateMostRead(req: Request, res: Response, next: NextFunc
   try {
     const id = parseId(req.params.id as string)
     requireBody(req)
-    requireFieldsFor(req.body, ['title', 'href', 'views'])
-    const data = await mostReadService.update(id, req.body)
+    const payload = normalizeMostReadPayload(req.body)
+    requireFieldsFor(payload, ['title', 'slug', 'rank'])
+    const data = await mostReadService.update(id, payload)
     ensureFound(data, 'MostRead')
     res.json(data)
   } catch (error) {

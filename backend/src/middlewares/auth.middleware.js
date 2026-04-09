@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+﻿import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 import { createHttpError } from "../utils/http.js";
 import { User } from "../models/User.js";
@@ -26,7 +26,7 @@ export async function requireAuth(req, _res, next) {
 
     req.user = user;
     return next();
-  } catch (error) {
+  } catch {
     return next(createHttpError(401, "Invalid or expired token"));
   }
 }
@@ -43,3 +43,4 @@ export function requireRole(roles = []) {
     return next();
   };
 }
+

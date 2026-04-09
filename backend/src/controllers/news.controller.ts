@@ -39,6 +39,7 @@ export async function listPublicPosts(req: Request, res: Response, next: NextFun
     const pagination = parsePagination(req.query)
     const data = await postsService.list({
       category: req.query.category as string | undefined,
+      status: 'published',
       q: req.query.q as string | undefined,
       limit: pagination.limit,
       offset: pagination.offset,
@@ -63,7 +64,7 @@ export async function listPublicPosts(req: Request, res: Response, next: NextFun
 
 export async function getPublicPost(req: Request, res: Response, next: NextFunction) {
   try {
-    const data = await postsService.getBySlug(req.params.slug as string)
+    const data = await postsService.getBySlugAndTrackView(req.params.slug as string)
     ensureFound(data, 'Post')
     res.json(data)
   } catch (error) {

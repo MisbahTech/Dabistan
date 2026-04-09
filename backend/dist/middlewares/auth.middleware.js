@@ -22,7 +22,7 @@ export async function requireAuth(req, _res, next) {
         req.user = user;
         return next();
     }
-    catch (error) {
+    catch {
         return next(createHttpError(401, "Invalid or expired token"));
     }
 }

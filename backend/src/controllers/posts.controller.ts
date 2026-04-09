@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+﻿import { Request, Response, NextFunction } from 'express'
 import { postsService } from '../services/posts.service.js'
 import { ensureFound, requireBody, requireFieldsFor } from '../utils/handlers.js'
 import { formatPaginatedResponse, parsePagination } from '../utils/pagination.js'
@@ -9,6 +9,7 @@ export async function listPosts(req: Request, res: Response, next: NextFunction)
     const data = await postsService.list({
       sectionSlug: req.query.section_slug as string | undefined,
       category: req.query.category_slug as string | undefined,
+      status: req.query.status as string | undefined,
       q: req.query.q as string | undefined,
       limit: pagination.limit,
       offset: pagination.offset,

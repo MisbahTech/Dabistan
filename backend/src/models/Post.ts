@@ -1,5 +1,13 @@
 import mongoose, { Schema, Document } from 'mongoose'
 
+export interface IPostAttachment {
+  url: string
+  name: string
+  originalName: string
+  size: number
+  mimetype: string
+}
+
 export interface IPost extends Document {
   id: number
   title: string
@@ -9,8 +17,11 @@ export interface IPost extends Document {
   category: string
   section_slug: string
   image: string
+  gallery: string[]
+  attachment: IPostAttachment | null
   author: string
   status: 'draft' | 'published'
+  view_count: number
   published_at: Date | null
   created_at: Date
   updated_at: Date
@@ -26,8 +37,23 @@ const PostSchema: Schema = new Schema(
     category: { type: String, default: '' },
     section_slug: { type: String, required: true },
     image: { type: String, default: '' },
+    gallery: [{ type: String, default: '' }],
+    attachment: {
+      type: new Schema(
+        {
+          url: { type: String, required: true },
+          name: { type: String, default: '' },
+          originalName: { type: String, default: '' },
+          size: { type: Number, default: 0 },
+          mimetype: { type: String, default: '' },
+        },
+        { _id: false }
+      ),
+      default: null,
+    },
     author: { type: String, required: true },
     status: { type: String, enum: ['draft', 'published'], default: 'draft' },
+    view_count: { type: Number, default: 0 },
     published_at: { type: Date, default: null },
   },
   {
@@ -48,3 +74,5 @@ PostSchema.index({ category: 1 })
 PostSchema.index({ section_slug: 1 })
 
 export const Post = mongoose.model<IPost>('Post', PostSchema)
+
+

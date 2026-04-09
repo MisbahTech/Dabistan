@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+﻿import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 import siteLogo from '../assets/logo.png'
 
@@ -17,6 +17,8 @@ const navItems = [
 
 export default function DashboardLayout({ children }) {
   const { user, logout } = useAuth()
+  const userRole = user?.role?.slug || user?.role
+  const roleLabel = user?.role?.name || user?.roleName || 'Dashboard'
 
   return (
     <div className="app-shell" dir="ltr">
@@ -30,10 +32,7 @@ export default function DashboardLayout({ children }) {
         </div>
         <nav className="sidebar-nav">
           {navItems
-            .filter((item) => {
-              const userRole = user?.role?.slug || user?.role
-              return item.roles.includes(userRole)
-            })
+            .filter((item) => item.roles.includes(userRole))
             .map((item) => (
               <NavLink
                 key={item.to}
@@ -48,7 +47,7 @@ export default function DashboardLayout({ children }) {
       <div className="main-area">
         <header className="topbar">
           <div>
-            <h2>{user?.role?.name || 'Dashboard'}</h2>
+            <h2>{roleLabel}</h2>
             <p>{user?.email}</p>
           </div>
           <button className="btn ghost" type="button" onClick={logout}>
@@ -60,4 +59,3 @@ export default function DashboardLayout({ children }) {
     </div>
   )
 }
-

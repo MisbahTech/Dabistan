@@ -8,7 +8,7 @@ const emptyLogin = { email: '', password: '' }
 const emptyReset = { email: '', otp: '', newPassword: '', confirmPassword: '' }
 
 export default function LoginPage() {
-  const { login, logout, status: authStatus } = useAuth()
+  const { login, status: authStatus } = useAuth()
   const navigate = useNavigate()
   const [mode, setMode] = useState('login')
   const [roleChoice, setRoleChoice] = useState('admin')
@@ -27,17 +27,22 @@ export default function LoginPage() {
     }
   }, [authStatus, navigate])
 
+  const openMode = (nextMode) => {
+    setMode(nextMode)
+    setError('')
+    setMessage('')
+    if (nextMode !== 'login') {
+      setResetForm((prev) => ({ ...prev, email: prev.email || form.email.trim() }))
+    }
+  }
+
   const handleLogin = async (event) => {
     event.preventDefault()
     setStatus('loading')
     setError('')
     setMessage('')
     try {
-      const user = await login(form.email, form.password)
-      if (roleChoice && user.role !== roleChoice) {
-        logout()
-        throw new Error(`This account is not an ${roleChoice}.`)
-      }
+      await login(form.email.trim().toLowerCase(), form.password, roleChoice)
       navigate('/dashboard', { replace: true })
     } catch (err) {
       setError(err.message)
@@ -51,8 +56,10 @@ export default function LoginPage() {
     setError('')
     setMessage('')
     try {
-      await forgotMutation.mutateAsync({ email: resetForm.email })
-      setMessage('OTP sent. Check your email for the 6-digit code.')
+      const email = resetForm.email.trim()
+      const result = await forgotMutation.mutateAsync({ email })
+      setResetForm((prev) => ({ ...prev, email, otp: result?.debugOtp ?? prev.otp }))
+      setMessage(result?.debugOtp ? result.message + ' OTP: ' + result.debugOtp : result?.message || 'OTP sent. Check your email for the 6-digit code.')
       setMode('reset')
       setStatus('idle')
     } catch (err) {
@@ -73,13 +80,13 @@ export default function LoginPage() {
     }
     try {
       await resetMutation.mutateAsync({
-        email: resetForm.email,
-        otp: resetForm.otp,
+        email: resetForm.email.trim(),
+        otp: resetForm.otp.trim(),
         newPassword: resetForm.newPassword,
       })
       setMessage('Password reset. You can now sign in.')
       setMode('login')
-      setForm((prev) => ({ ...prev, email: resetForm.email, password: '' }))
+      setForm((prev) => ({ ...prev, email: resetForm.email.trim(), password: '' }))
       setResetForm(emptyReset)
       setStatus('idle')
     } catch (err) {
@@ -105,6 +112,7 @@ export default function LoginPage() {
                 <span>Email</span>
                 <input
                   type="email"
+                  autoComplete="username"
                   value={form.email}
                   onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
                   required
@@ -114,6 +122,7 @@ export default function LoginPage() {
                 <span>Password</span>
                 <input
                   type="password"
+                  autoComplete="current-password"
                   value={form.password}
                   onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
                   required
@@ -141,15 +150,7 @@ export default function LoginPage() {
               <button className="btn primary" type="submit" disabled={status === 'loading'}>
                 {status === 'loading' ? 'Signing in...' : 'Login'}
               </button>
-              <button
-                className="link"
-                type="button"
-                onClick={() => {
-                  setMode('forgot')
-                  setError('')
-                  setMessage('')
-                }}
-              >
+              <button className="link" type="button" onClick={() => openMode('forgot')}>
                 Forgot password?
               </button>
             </form>
@@ -163,6 +164,7 @@ export default function LoginPage() {
                 <span>Email</span>
                 <input
                   type="email"
+                  autoComplete="email"
                   value={resetForm.email}
                   onChange={(event) => setResetForm((prev) => ({ ...prev, email: event.target.value }))}
                   required
@@ -173,15 +175,7 @@ export default function LoginPage() {
               <button className="btn primary" type="submit" disabled={status === 'loading'}>
                 {status === 'loading' ? 'Sending...' : 'Send OTP'}
               </button>
-              <button
-                className="link"
-                type="button"
-                onClick={() => {
-                  setMode('login')
-                  setError('')
-                  setMessage('')
-                }}
-              >
+              <button className="link" type="button" onClick={() => openMode('login')}>
                 Back to login
               </button>
             </form>
@@ -195,6 +189,7 @@ export default function LoginPage() {
                 <span>Email</span>
                 <input
                   type="email"
+                  autoComplete="email"
                   value={resetForm.email}
                   onChange={(event) => setResetForm((prev) => ({ ...prev, email: event.target.value }))}
                   required
@@ -204,8 +199,11 @@ export default function LoginPage() {
                 <span>OTP Code</span>
                 <input
                   type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  pattern="[0-9]{6}"
                   value={resetForm.otp}
-                  onChange={(event) => setResetForm((prev) => ({ ...prev, otp: event.target.value }))}
+                  onChange={(event) => setResetForm((prev) => ({ ...prev, otp: event.target.value.replace(/\D/g, '').slice(0, 6) }))}
                   required
                 />
               </label>
@@ -213,6 +211,8 @@ export default function LoginPage() {
                 <span>New Password</span>
                 <input
                   type="password"
+                  autoComplete="new-password"
+                  minLength={8}
                   value={resetForm.newPassword}
                   onChange={(event) => setResetForm((prev) => ({ ...prev, newPassword: event.target.value }))}
                   required
@@ -222,6 +222,8 @@ export default function LoginPage() {
                 <span>Confirm Password</span>
                 <input
                   type="password"
+                  autoComplete="new-password"
+                  minLength={8}
                   value={resetForm.confirmPassword}
                   onChange={(event) => setResetForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
                   required
@@ -229,18 +231,15 @@ export default function LoginPage() {
               </label>
               {error ? <div className="alert error">{error}</div> : null}
               {message ? <div className="alert">{message}</div> : null}
-              <button className="btn primary" type="submit" disabled={status === 'loading'}>
-                {status === 'loading' ? 'Updating...' : 'Reset Password'}
-              </button>
-              <button
-                className="link"
-                type="button"
-                onClick={() => {
-                  setMode('login')
-                  setError('')
-                  setMessage('')
-                }}
-              >
+              <div className="auth-actions-row">
+                <button className="btn primary" type="submit" disabled={status === 'loading'}>
+                  {status === 'loading' ? 'Updating...' : 'Reset Password'}
+                </button>
+                <button className="btn ghost" type="button" onClick={handleSendOtp} disabled={status === 'loading'}>
+                  Resend OTP
+                </button>
+              </div>
+              <button className="link" type="button" onClick={() => openMode('login')}>
                 Back to login
               </button>
             </form>
@@ -250,4 +249,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

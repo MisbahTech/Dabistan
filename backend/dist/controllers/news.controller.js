@@ -35,6 +35,7 @@ export async function listPublicPosts(req, res, next) {
         const pagination = parsePagination(req.query);
         const data = await postsService.list({
             category: req.query.category,
+            status: 'published',
             q: req.query.q,
             limit: pagination.limit,
             offset: pagination.offset,
@@ -57,7 +58,7 @@ export async function listPublicPosts(req, res, next) {
 }
 export async function getPublicPost(req, res, next) {
     try {
-        const data = await postsService.getBySlug(req.params.slug);
+        const data = await postsService.getBySlugAndTrackView(req.params.slug);
         ensureFound(data, 'Post');
         res.json(data);
     }

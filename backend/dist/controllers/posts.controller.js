@@ -7,6 +7,7 @@ export async function listPosts(req, res, next) {
         const data = await postsService.list({
             sectionSlug: req.query.section_slug,
             category: req.query.category_slug,
+            status: req.query.status,
             q: req.query.q,
             limit: pagination.limit,
             offset: pagination.offset,

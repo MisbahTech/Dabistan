@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+﻿import { useState, useMemo } from 'react'
 import {
   useRolesQuery,
   useCreateRoleMutation,
@@ -23,15 +23,15 @@ export default function RolesPage() {
   const deleteRole = useDeleteRoleMutation()
 
   const roles = rolesQuery.data?.data ?? (Array.isArray(rolesQuery.data) ? rolesQuery.data : [])
-  const allPermissions = permissionsQuery.data?.data ?? (Array.isArray(permissionsQuery.data) ? permissionsQuery.data : [])
-  
+
   const filteredPermissions = useMemo(() => {
+    const allPermissions = permissionsQuery.data?.data ?? (Array.isArray(permissionsQuery.data) ? permissionsQuery.data : [])
     if (!permissionSearch) return allPermissions
     return allPermissions.filter(p => 
       p.name.toLowerCase().includes(permissionSearch.toLowerCase()) ||
       p.slug.toLowerCase().includes(permissionSearch.toLowerCase())
     )
-  }, [allPermissions, permissionSearch])
+  }, [permissionsQuery.data, permissionSearch])
 
   const isLoading = rolesQuery.isLoading || permissionsQuery.isLoading
   const isSaving = createRole.isPending || updateRole.isPending || deleteRole.isPending
@@ -278,3 +278,4 @@ export default function RolesPage() {
     </section>
   )
 }
+

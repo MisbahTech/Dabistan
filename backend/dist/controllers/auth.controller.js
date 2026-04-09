@@ -1,4 +1,4 @@
-import { authenticateUser, requestPasswordOtp } from '../services/auth.service.js';
+import { authenticateUser, requestPasswordOtp, resetPasswordWithOtp } from '../services/auth.service.js';
 import { requireBody } from '../utils/handlers.js';
 export async function login(req, res, next) {
     try {
@@ -23,11 +23,11 @@ export async function forgotPassword(req, res, next) {
         next(error);
     }
 }
-export async function resetPassword(_req, _res, next) {
+export async function resetPassword(req, res, next) {
     try {
-        // This logic was complex in auth.controller.js, but auth.service.ts handles it differently?
-        // Wait, I should probably check if I missed resetPassword in auth.service.ts.
-        throw new Error('resetPassword not implemented in auth.service yet');
+        requireBody(req);
+        const result = await resetPasswordWithOtp(req.body);
+        res.json(result);
     }
     catch (error) {
         next(error);

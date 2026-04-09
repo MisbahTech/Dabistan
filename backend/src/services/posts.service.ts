@@ -1,4 +1,5 @@
 import * as postsRepository from '../repositories/posts.repository.js'
+import { syncMostReadFromPublishedPosts } from '../repositories/mostRead.repository.js'
 import { IPost } from '../models/Post.js'
 
 export const postsService = {
@@ -14,15 +15,29 @@ export const postsService = {
     return postsRepository.getPostBySlug(slug)
   },
 
-  create(payload: postsRepository.CreatePostData): Promise<any> {
-    return postsRepository.createPost(payload)
+  async getBySlugAndTrackView(slug: string): Promise<IPost | null> {
+    const post = await postsRepository.incrementPublishedPostViewCount(slug)
+    if (post) {
+      await syncMostReadFromPublishedPosts()
+    }
+    return post
   },
 
-  update(id: postsRepository.PostIdentifier, payload: Partial<postsRepository.CreatePostData>): Promise<IPost | null> {
-    return postsRepository.updatePost(id, payload)
+  async create(payload: postsRepository.CreatePostData): Promise<any> {
+    const post = await postsRepository.createPost(payload)
+    await syncMostReadFromPublishedPosts()
+    return post
   },
 
-  remove(id: postsRepository.PostIdentifier): Promise<IPost | null> {
-    return postsRepository.deletePost(id)
+  async update(id: postsRepository.PostIdentifier, payload: Partial<postsRepository.CreatePostData>): Promise<IPost | null> {
+    const post = await postsRepository.updatePost(id, payload)
+    await syncMostReadFromPublishedPosts()
+    return post
+  },
+
+  async remove(id: postsRepository.PostIdentifier): Promise<IPost | null> {
+    const post = await postsRepository.deletePost(id)
+    await syncMostReadFromPublishedPosts()
+    return post
   },
 }

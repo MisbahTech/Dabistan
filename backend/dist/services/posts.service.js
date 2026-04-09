@@ -1,4 +1,5 @@
 import * as postsRepository from '../repositories/posts.repository.js';
+import { syncMostReadFromPublishedPosts } from '../repositories/mostRead.repository.js';
 export const postsService = {
     list(options = {}) {
         return postsRepository.listPosts(options);
@@ -9,14 +10,27 @@ export const postsService = {
     getBySlug(slug) {
         return postsRepository.getPostBySlug(slug);
     },
-    create(payload) {
-        return postsRepository.createPost(payload);
+    async getBySlugAndTrackView(slug) {
+        const post = await postsRepository.incrementPublishedPostViewCount(slug);
+        if (post) {
+            await syncMostReadFromPublishedPosts();
+        }
+        return post;
     },
-    update(id, payload) {
-        return postsRepository.updatePost(id, payload);
+    async create(payload) {
+        const post = await postsRepository.createPost(payload);
+        await syncMostReadFromPublishedPosts();
+        return post;
     },
-    remove(id) {
-        return postsRepository.deletePost(id);
+    async update(id, payload) {
+        const post = await postsRepository.updatePost(id, payload);
+        await syncMostReadFromPublishedPosts();
+        return post;
+    },
+    async remove(id) {
+        const post = await postsRepository.deletePost(id);
+        await syncMostReadFromPublishedPosts();
+        return post;
     },
 };
 //# sourceMappingURL=posts.service.js.map

@@ -1,8 +1,9 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import {
   useCreateUserMutation,
   useDeleteUserMutation,
   useUpdateUserMutation,
+  useUpdateUserPasswordMutation,
   useUsersQuery,
 } from '../services/usersApi'
 
@@ -19,19 +20,33 @@ export default function UsersPage() {
   const rolesQuery = useRolesQuery()
   const createUser = useCreateUserMutation()
   const updateUser = useUpdateUserMutation()
+  const updateUserPassword = useUpdateUserPasswordMutation()
   const deleteUser = useDeleteUserMutation()
 
   const users = usersQuery.data?.data ?? (Array.isArray(usersQuery.data) ? usersQuery.data : [])
   const roles = rolesQuery.data?.data ?? (Array.isArray(rolesQuery.data) ? rolesQuery.data : [])
   const isLoading = usersQuery.isLoading || rolesQuery.isLoading
-  const isSaving = createUser.isPending || updateUser.isPending || deleteUser.isPending
+  const isSaving = createUser.isPending || updateUser.isPending || updateUserPassword.isPending || deleteUser.isPending
 
   const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
     try {
       if (editingId) {
-        await updateUser.mutateAsync({ id: editingId, payload: form })
+        await updateUser.mutateAsync({
+          id: editingId,
+          payload: {
+            name: form.name,
+            email: form.email,
+            role: form.role,
+          },
+        })
+        if (form.password.trim()) {
+          await updateUserPassword.mutateAsync({
+            id: editingId,
+            payload: { password: form.password },
+          })
+        }
       } else {
         await createUser.mutateAsync(form)
       }
@@ -48,7 +63,7 @@ export default function UsersPage() {
       name: user.name ?? '',
       email: user.email ?? '',
       password: '',
-      role: user.role?.slug || user.role || ''
+      role: user.role?.slug || user.role || '',
     })
   }
 
@@ -110,7 +125,7 @@ export default function UsersPage() {
               type="password"
               value={form.password}
               onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
-              placeholder={editingId ? 'Leave blank to keep current password' : 'Set a password'}
+              placeholder={editingId ? 'Enter a new password only if you want to change it' : 'Set a password'}
               required={!editingId}
             />
           </label>
@@ -175,4 +190,3 @@ export default function UsersPage() {
     </section>
   )
 }
-

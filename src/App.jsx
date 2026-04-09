@@ -1,10 +1,11 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+﻿import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import DashboardLayout from './layouts/DashboardLayout'
 import LoginPage from './pages/Login'
 import PublicHomePage from './pages/PublicHome'
 import PublicPostPage from './pages/PublicPost'
+import GalleryPage from './pages/Gallery'
 import DashboardPage from './pages/Dashboard'
 import PostsPage from './pages/Posts'
 import CategoriesPage from './pages/Categories'
@@ -18,13 +19,20 @@ import PermissionsPage from './pages/Permissions'
 import NotFoundPage from './pages/NotFound'
 import './styles/App.css'
 
+// This file is the frontend route map.
+// Think of it as the app's traffic controller:
+// each URL is matched here, then routed either to
+// public pages or to admin pages behind auth checks.
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
         <Route path="/" element={<PublicHomePage />} />
+        <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/post/:slug" element={<PublicPostPage />} />
         <Route path="/login" element={<LoginPage />} />
+        {/* /admin is only a convenience entry.
+            Once auth passes, users are redirected to the real dashboard route. */}
         <Route
           path="/admin"
           element={
@@ -33,6 +41,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        {/* ProtectedRoute handles authentication first.
+            DashboardLayout then wraps the actual page with the admin shell. */}
         <Route
           path="/dashboard"
           element={
@@ -43,6 +53,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        {/* Role-based checks happen at route level so unauthorized pages never render. */}
         <Route
           path="/posts"
           element={
@@ -133,12 +144,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="*"
-          element={<NotFoundPage />}
-        />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AuthProvider>
   )
 }
-

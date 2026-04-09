@@ -1,16 +1,24 @@
 import crypto from 'node:crypto'
+import { env } from '../config/env.js'
 import { createHttpError, requireFields } from '../utils/http.js'
 import { comparePassword, hashPassword } from './password.service.js'
 import { signToken } from '../middlewares/auth.middleware.js'
 import { usersService } from './users.service.js'
-import { replaceOtpForEmail } from '../repositories/passwordOtps.repository.js'
-import { sendMail } from './mailer.service.js'
+import { consumeOtp, findValidOtp, replaceOtpForEmail } from '../repositories/passwordOtps.repository.js'
+import { isMailConfigured, sendMail } from './mailer.service.js'
 
 const OTP_TTL_MINUTES = 10
+const MIN_PASSWORD_LENGTH = 8
 
-export async function authenticateUser({ email, password }: any): Promise<any> {
-  requireFields({ email, password }, ['email', 'password'])
-  const user = await usersService.getByEmail(email) as any
+function normalizeEmail(email: string): string {
+  return String(email || '').trim().toLowerCase()
+}
+
+export async function authenticateUser({ email, password, role }: any): Promise<any> {
+  const normalizedEmail = normalizeEmail(email)
+  const normalizedRole = String(role || '').trim().toLowerCase()
+  requireFields({ email: normalizedEmail, password }, ['email', 'password'])
+  const user = await usersService.getByEmail(normalizedEmail) as any
   if (!user) {
     throw createHttpError(401, 'Invalid credentials')
   }
@@ -23,21 +31,32 @@ export async function authenticateUser({ email, password }: any): Promise<any> {
   await usersService.updateLastLogin(user.id)
 
   const roleSlug = (user.role as any)?.slug || user.role
+  const roleName = (user.role as any)?.name || roleSlug
+
+  if (normalizedRole && roleSlug !== normalizedRole) {
+    throw createHttpError(403, 'This account is not allowed for the selected role')
+  }
+
   const token = signToken({ id: user.id, email: user.email, role: roleSlug })
 
   return {
     token,
     user: {
       id: user.id,
+      name: user.name,
       email: user.email,
-      role: roleSlug,
+      role: {
+        slug: roleSlug,
+        name: roleName,
+      },
     },
   }
 }
 
 export async function requestPasswordOtp({ email }: any): Promise<any> {
-  requireFields({ email }, ['email'])
-  const user = await usersService.getByEmail(email)
+  const normalizedEmail = normalizeEmail(email)
+  requireFields({ email: normalizedEmail }, ['email'])
+  const user = await usersService.getByEmail(normalizedEmail)
   if (!user) {
     return { message: 'If this email exists, an OTP has been sent.' }
   }
@@ -46,7 +65,7 @@ export async function requestPasswordOtp({ email }: any): Promise<any> {
   const otp_hash = await hashPassword(otp)
   const expires_at = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000)
 
-  await replaceOtpForEmail({ email, otp_hash, expires_at })
+  await replaceOtpForEmail({ email: normalizedEmail, otp_hash, expires_at })
 
   const subject = 'Your Dabistan OTP'
   const text = `Your Dabistan OTP is ${otp}. It expires in ${OTP_TTL_MINUTES} minutes.`
@@ -61,7 +80,48 @@ export async function requestPasswordOtp({ email }: any): Promise<any> {
     </div>
   `
 
-  await sendMail({ to: email, subject, text, html })
+  if (!isMailConfigured()) {
+    if (env.nodeEnv === 'production') {
+      throw createHttpError(500, 'SMTP is not configured')
+    }
+
+    return {
+      message: 'SMTP is not configured. Use the OTP below for local testing.',
+      debugOtp: otp,
+    }
+  }
+
+  await sendMail({ to: normalizedEmail, subject, text, html })
 
   return { message: 'If this email exists, an OTP has been sent.' }
+}
+
+export async function resetPasswordWithOtp({ email, otp, newPassword }: any): Promise<any> {
+  const normalizedEmail = normalizeEmail(email)
+  const normalizedOtp = String(otp || '').trim()
+  requireFields({ email: normalizedEmail, otp: normalizedOtp, newPassword }, ['email', 'otp', 'newPassword'])
+
+  if (String(newPassword).length < MIN_PASSWORD_LENGTH) {
+    throw createHttpError(400, `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`)
+  }
+
+  const user = await usersService.getByEmail(normalizedEmail) as any
+  if (!user) {
+    throw createHttpError(400, 'Invalid or expired OTP')
+  }
+
+  const otpRecord = await findValidOtp(normalizedEmail)
+  if (!otpRecord) {
+    throw createHttpError(400, 'Invalid or expired OTP')
+  }
+
+  const validOtp = await comparePassword(normalizedOtp, otpRecord.otp_hash)
+  if (!validOtp) {
+    throw createHttpError(400, 'Invalid or expired OTP')
+  }
+
+  await usersService.updatePassword(user.id, newPassword)
+  await consumeOtp(String((otpRecord as any)._id))
+
+  return { message: 'Password reset successful.' }
 }

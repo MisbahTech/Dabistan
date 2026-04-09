@@ -1,14 +1,18 @@
-import nodemailer from 'nodemailer'
+﻿import nodemailer from 'nodemailer'
 import { env } from '../config/env.js'
 
 let transport: nodemailer.Transporter | null = null
+
+export function isMailConfigured(): boolean {
+  return Boolean(env.smtpHost && env.smtpUser && env.smtpPass)
+}
 
 function ensureTransport(): nodemailer.Transporter {
   if (transport) {
     return transport
   }
 
-  if (!env.smtpHost || !env.smtpUser || !env.smtpPass) {
+  if (!isMailConfigured()) {
     throw new Error('SMTP is not configured')
   }
 

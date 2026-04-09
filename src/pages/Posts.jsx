@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import {
   useCreatePostMutation,
   useDeletePostMutation,
@@ -18,6 +18,7 @@ const emptyForm = {
   excerpt: '',
   content: '',
   featuredImage: '',
+  galleryImages: [],
   attachment: null,
   publishedAt: '',
 }
@@ -33,6 +34,24 @@ function toSlug(value) {
     .replace(/\s+/g, '-')
     .replace(/[^\w-]+/g, '')
     .replace(/--+/g, '-')
+}
+
+function uniqueValues(values) {
+  return [...new Set(values.filter(Boolean))]
+}
+
+function normalizeAttachment(uploaded) {
+  if (!uploaded?.url) {
+    return null
+  }
+
+  return {
+    url: uploaded.url,
+    name: uploaded.name || uploaded.originalName || '',
+    originalName: uploaded.originalName || uploaded.name || '',
+    size: uploaded.size || 0,
+    mimetype: uploaded.mimetype || '',
+  }
 }
 
 export default function PostsPage() {
@@ -75,7 +94,9 @@ export default function PostsPage() {
         status: form.status,
         excerpt: form.excerpt || '',
         content: form.content,
-        image: form.featuredImage || '',
+        image: form.featuredImage || form.galleryImages[0] || '',
+        gallery: uniqueValues([form.featuredImage, ...form.galleryImages]),
+        attachment: normalizeAttachment(form.attachment),
         published_at: form.publishedAt || null,
         author: fallbackAuthor,
       }
@@ -99,6 +120,8 @@ export default function PostsPage() {
       return
     }
 
+    const galleryImages = uniqueValues([post.image, ...(Array.isArray(post.gallery) ? post.gallery : [])])
+
     setEditingId(rowId)
     setForm({
       title: post.title ?? '',
@@ -108,8 +131,9 @@ export default function PostsPage() {
       status: post.status ?? 'draft',
       excerpt: post.excerpt ?? '',
       content: post.content ?? '',
-      featuredImage: post.image ?? post.featuredImage ?? '',
-      attachment: post.attachment ?? null,
+      featuredImage: post.image ?? post.featuredImage ?? galleryImages[0] ?? '',
+      galleryImages,
+      attachment: normalizeAttachment(post.attachment),
       publishedAt: (post.published_at ?? post.publishedAt)
         ? (post.published_at ?? post.publishedAt).slice(0, 16)
         : '',
@@ -134,24 +158,50 @@ export default function PostsPage() {
   }
 
   const handleUpload = async (event, field) => {
-    const file = event.target.files?.[0]
-    if (!file) {
+    const files = Array.from(event.target.files ?? [])
+    if (!files.length) {
       return
     }
     setUploadingField(field)
     setError('')
     try {
-      const uploaded = await uploadMutation.mutateAsync(file)
-      if (field === 'featuredImage') {
-        setForm((prev) => ({ ...prev, featuredImage: uploaded.url }))
+      if (field === 'galleryImages') {
+        const uploadedItems = await Promise.all(files.map((file) => uploadMutation.mutateAsync(file)))
+        const uploadedUrls = uploadedItems.map((item) => item.url).filter(Boolean)
+        setForm((prev) => ({
+          ...prev,
+          featuredImage: prev.featuredImage || uploadedUrls[0] || '',
+          galleryImages: uniqueValues([...prev.galleryImages, ...uploadedUrls]),
+        }))
       } else {
-        setForm((prev) => ({ ...prev, attachment: uploaded }))
+        const uploaded = await uploadMutation.mutateAsync(files[0])
+        if (field === 'featuredImage') {
+          setForm((prev) => ({
+            ...prev,
+            featuredImage: uploaded.url,
+            galleryImages: uniqueValues([uploaded.url, ...prev.galleryImages]),
+          }))
+        } else {
+          setForm((prev) => ({ ...prev, attachment: normalizeAttachment(uploaded) }))
+        }
       }
     } catch (err) {
       setError(err.message)
     } finally {
+      event.target.value = ''
       setUploadingField('')
     }
+  }
+
+  const handleRemoveImage = (imageUrl) => {
+    setForm((prev) => {
+      const galleryImages = prev.galleryImages.filter((item) => item !== imageUrl)
+      return {
+        ...prev,
+        galleryImages,
+        featuredImage: prev.featuredImage === imageUrl ? galleryImages[0] || '' : prev.featuredImage,
+      }
+    })
   }
 
   return (
@@ -272,14 +322,50 @@ export default function PostsPage() {
             {form.featuredImage ? <small>{form.featuredImage}</small> : null}
           </div>
           <div className="upload-field">
-            <span>Attachment</span>
+            <span>Post Images</span>
             <input
               type="file"
-              accept=".pdf,.doc,.docx,image/png,image/jpeg,image/webp"
+              multiple
+              accept="image/png,image/jpeg,image/webp"
+              onChange={(event) => handleUpload(event, 'galleryImages')}
+            />
+            {uploadingField === 'galleryImages' ? <span className="muted">Uploading...</span> : null}
+            {form.galleryImages.length ? <small>{form.galleryImages.length} image(s) selected</small> : null}
+          </div>
+          {form.galleryImages.length ? (
+            <div className="upload-preview full">
+              {form.galleryImages.map((imageUrl, index) => (
+                <div key={imageUrl} className={`media-pill${form.featuredImage === imageUrl ? ' featured' : ''}`}>
+                  <a className="link" href={imageUrl} target="_blank" rel="noreferrer">
+                    {`Image ${index + 1}`}
+                  </a>
+                  <div className="media-pill-actions">
+                    <button
+                      className="btn ghost"
+                      type="button"
+                      onClick={() => setForm((prev) => ({ ...prev, featuredImage: imageUrl }))}
+                    >
+                      {form.featuredImage === imageUrl ? 'Featured' : 'Set Featured'}
+                    </button>
+                    <button className="btn danger" type="button" onClick={() => handleRemoveImage(imageUrl)}>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          <div className="upload-field">
+            <span>PDF</span>
+            <input
+              type="file"
+              accept=".pdf,application/pdf"
               onChange={(event) => handleUpload(event, 'attachment')}
             />
             {uploadingField === 'attachment' ? <span className="muted">Uploading...</span> : null}
-            {form.attachment ? <small>{form.attachment.originalName}</small> : null}
+            {form.attachment ? (
+              <small>{form.attachment.originalName || form.attachment.name || 'Uploaded PDF'}</small>
+            ) : null}
           </div>
           {error ? <div className="alert error full">{error}</div> : null}
           <button className="btn primary" type="submit" disabled={isSaving}>
