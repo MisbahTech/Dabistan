@@ -8,7 +8,9 @@ export async function connectDb() {
     return mongoose.connection;
   }
 
-  if (!env.databaseUrl) {
+  // if (!env.databaseUrl) {
+  if (!process.env.MONGODB_URI && !process.env.DATABASE_URL) {
+    console.log("MONGOOOSE URLLLLLL: ", env.databaseUrl);
     throw new Error("MONGODB_URI (or DATABASE_URL) must be set");
   }
 
@@ -27,7 +29,10 @@ export async function connectDb() {
     isConnected = false;
   });
 
-  await mongoose.connect(env.databaseUrl);
+  // await mongoose.connect(env.databaseUrl);
+  await mongoose.connect(
+    process.env.MONGODB_URI ?? process.env.DATABASE_URL ?? "",
+  );
   isConnected = true;
   return mongoose.connection;
 }
