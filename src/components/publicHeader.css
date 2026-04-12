@@ -1,0 +1,181 @@
+/* 
+  Public Header: GRID SYSTEM 
+  Consolidated styles for the public-facing header.
+*/
+
+.public-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  height: 72px; /* Increased slightly for better breathability */
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.public-header-inner {
+  display: grid !important;
+  grid-template-columns: auto 1fr auto; /* [Logo] [Search] [Auth/Icons] */
+  align-items: center;
+  gap: 2.5rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
+}
+
+/* Side Sections */
+.public-header-side {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: max-content;
+}
+
+.public-header-side.right {
+  justify-content: flex-start;
+}
+
+.public-header-side.left {
+  justify-content: flex-end;
+}
+
+/* Center Section (Search Area) */
+.public-header-center {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* 1. Brand Card - Cleaned from legacy App.css bloat */
+.public-brand-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  min-width: unset !important;
+}
+
+.public-brand-logo {
+  height: 44px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.public-brand-mark {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #1e3a5f;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+/* 2. Search Box */
+.header-search-box {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  height: 42px;
+  width: 100%;
+  max-width: 600px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header-search-box:focus-within {
+  background: #fff;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.header-search-box .search-icon {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.header-search-box input {
+  background: transparent;
+  border: none;
+  width: 100%;
+  padding: 0 12px;
+  outline: none;
+  font-size: 1rem;
+  color: #0f172a;
+  font-family: inherit;
+}
+
+/* 3. Auth Buttons & Icon Buttons */
+.btn-header-auth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 1.25rem;
+  height: 42px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn-header-auth.login {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.btn-header-auth.login:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+}
+
+.btn-header-auth.dashboard {
+  background: #1e293b;
+  color: #ffffff;
+}
+
+.btn-header-auth.dashboard:hover {
+  background: #0f172a;
+}
+
+.header-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+  transition: all 0.2s;
+  border: 1px solid #e2e8f0;
+}
+
+.header-icon-btn:hover {
+  background: #f1f5f9;
+  color: #1e3a5f;
+  border-color: #cbd5e1;
+}
+
+/* Responsive Overrides */
+@media (max-width: 900px) {
+  .public-header-inner {
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+  }
+  .public-header-side.left {
+    display: none; /* Hide auth on small screens or move to menu */
+  }
+}

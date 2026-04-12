@@ -2,7 +2,15 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 import { useForgotPasswordMutation, useResetPasswordMutation } from '../services/authApi'
+import { ShieldCheck, Edit3, PenTool } from 'lucide-react'
 import siteLogo from '../assets/logo.png'
+import { getSavedEmail, setSavedEmail, getSavedRole, setSavedRole } from '../services/authStore'
+
+const ROLES = [
+  { id: 'admin', label: 'Admin', icon: ShieldCheck, color: '#1e3a5f' },
+  { id: 'editor', label: 'Editor', icon: Edit3, color: '#0f172a' },
+  { id: 'author', label: 'Author', icon: PenTool, color: '#10b981' },
+]
 
 const emptyLogin = { email: '', password: '' }
 const emptyReset = { email: '', otp: '', newPassword: '', confirmPassword: '' }
@@ -11,8 +19,8 @@ export default function LoginPage() {
   const { login, status: authStatus } = useAuth()
   const navigate = useNavigate()
   const [mode, setMode] = useState('login')
-  const [roleChoice, setRoleChoice] = useState('admin')
-  const [form, setForm] = useState(emptyLogin)
+  const [roleChoice, setRoleChoice] = useState(() => getSavedRole())
+  const [form, setForm] = useState(() => ({ ...emptyLogin, email: getSavedEmail() }))
   const [resetForm, setResetForm] = useState(emptyReset)
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
@@ -43,6 +51,11 @@ export default function LoginPage() {
     setMessage('')
     try {
       await login(form.email.trim().toLowerCase(), form.password, roleChoice)
+      
+      // Persist email and role for next visit
+      setSavedEmail(form.email.trim().toLowerCase())
+      setSavedRole(roleChoice)
+      
       navigate('/dashboard', { replace: true })
     } catch (err) {
       setError(err.message)
@@ -58,9 +71,10 @@ export default function LoginPage() {
     try {
       const email = resetForm.email.trim()
       const result = await forgotMutation.mutateAsync({ email })
-      setResetForm((prev) => ({ ...prev, email, otp: result?.debugOtp ?? prev.otp }))
-      setMessage(result?.debugOtp ? result.message + ' OTP: ' + result.debugOtp : result?.message || 'OTP sent. Check your email for the 6-digit code.')
+      // Clear OTP or set debug code to ensure the field is fresh for the user
+      setResetForm((prev) => ({ ...prev, email, otp: result?.debugOtp ?? '' }))
       setMode('reset')
+      setMessage(result?.debugOtp ? result.message + ' OTP: ' + result.debugOtp : result?.message || 'OTP sent successfully.')
       setStatus('idle')
     } catch (err) {
       setError(err.message)
@@ -131,16 +145,17 @@ export default function LoginPage() {
               <div className="role-toggle">
                 <span>Login as</span>
                 <div className="role-options">
-                  {['admin', 'editor'].map((role) => (
-                    <label key={role} className={`role-option ${roleChoice === role ? 'active' : ''}`}>
+                  {ROLES.map((role) => (
+                    <label key={role.id} className={`role-option ${roleChoice === role.id ? 'active' : ''}`}>
                       <input
                         type="radio"
                         name="roleChoice"
-                        value={role}
-                        checked={roleChoice === role}
-                        onChange={() => setRoleChoice(role)}
+                        value={role.id}
+                        checked={roleChoice === role.id}
+                        onChange={() => setRoleChoice(role.id)}
                       />
-                      {role === 'admin' ? 'Admin' : 'Editor'}
+                      <role.icon size={20} />
+                      <span>{role.label}</span>
                     </label>
                   ))}
                 </div>

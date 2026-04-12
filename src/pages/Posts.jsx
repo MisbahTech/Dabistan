@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import {
   useCreatePostMutation,
   useDeletePostMutation,
@@ -56,6 +56,7 @@ function normalizeAttachment(uploaded) {
 
 export default function PostsPage() {
   const { user } = useAuth()
+  const userRole = user?.role?.slug || user?.role
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
   const [error, setError] = useState('')
@@ -421,12 +422,16 @@ export default function PostsPage() {
                       View
                     </a>
                   ) : null}
-                  <button className="btn ghost" type="button" onClick={() => handleEdit(post)} disabled={!rowId}>
-                    Edit
-                  </button>
-                  <button className="btn danger" type="button" onClick={() => handleDelete(rowId)} disabled={!rowId}>
-                    Delete
-                  </button>
+                  {userRole !== 'author' && (
+                    <>
+                      <button className="btn ghost" type="button" onClick={() => handleEdit(post)} disabled={!rowId}>
+                        Edit
+                      </button>
+                      <button className="btn danger" type="button" onClick={() => handleDelete(rowId)} disabled={!rowId}>
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             )

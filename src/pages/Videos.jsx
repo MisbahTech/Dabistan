@@ -1,10 +1,11 @@
-import { useState } from 'react'
 import {
   useCreateVideoMutation,
   useDeleteVideoMutation,
   useUpdateVideoMutation,
   useVideosQuery,
 } from '../services/videosApi'
+import { useAuth } from '../context/useAuth'
+import { useState } from 'react'
 
 const emptyForm = {
   title: '',
@@ -17,6 +18,8 @@ const emptyForm = {
 }
 
 export default function VideosPage() {
+  const { user } = useAuth()
+  const userRole = user?.role?.slug || user?.role
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
   const [error, setError] = useState('')
@@ -185,12 +188,16 @@ export default function VideosPage() {
               <span>{item.category || '-'}</span>
               <span>{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : '-'}</span>
               <div className="actions">
-                <button className="btn ghost" type="button" onClick={() => handleEdit(item)}>
-                  Edit
-                </button>
-                <button className="btn danger" type="button" onClick={() => handleDelete(item.id)}>
-                  Delete
-                </button>
+                {userRole !== 'author' && (
+                  <>
+                    <button className="btn ghost" type="button" onClick={() => handleEdit(item)}>
+                      Edit
+                    </button>
+                    <button className="btn danger" type="button" onClick={() => handleDelete(item.id)}>
+                      Delete
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}

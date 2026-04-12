@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { getPublicJSON } from './publicApiClient'
 import { queryKeys } from './queryKeys'
 
@@ -10,11 +10,15 @@ export const publicPostsApi = {
     const query = new URLSearchParams()
     if (params.q) query.set('q', params.q)
     if (params.category) query.set('category', params.category)
+    if (params.sort) query.set('sort', params.sort)
     if (params.page) query.set('page', String(params.page))
     if (params.pageSize) query.set('page_size', String(params.pageSize))
 
     const suffix = query.toString()
     return getPublicJSON(`/public/posts${suffix ? `?${suffix}` : ''}`)
+  },
+  trending() {
+    return getPublicJSON('/public/most-read')
   },
   getBySlug(slug) {
     return getPublicJSON(`/public/posts/${slug}`)
@@ -27,6 +31,27 @@ export function usePublicPostsQuery(params = {}) {
   return useQuery({
     queryKey: queryKeys.publicPosts(params),
     queryFn: () => publicPostsApi.list(params),
+  })
+}
+
+export function useInfinitePublicPostsQuery(params = {}) {
+  return useInfiniteQuery({
+    queryKey: queryKeys.publicPosts({ ...params, infinite: true }),
+    queryFn: ({ pageParam = 1 }) => publicPostsApi.list({ ...params, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const pagination = lastPage?.pagination
+      if (!pagination) return undefined
+      const { page, total_pages } = pagination
+      return page < total_pages ? page + 1 : undefined
+    },
+  })
+}
+
+export function usePublicTrendingQuery() {
+  return useQuery({
+    queryKey: ['public', 'trending'],
+    queryFn: () => publicPostsApi.trending(),
   })
 }
 

@@ -11,18 +11,9 @@ import {
   Presentation,
   ChevronDown,
 } from 'lucide-react'
-import { Link, useLocation } from 'react-router-dom'
-import { useState, useEffect, useMemo} from 'react'
-import { Search, User, LogIn, LayoutDashboard, Image as ImageIcon } from 'lucide-react'
-import { useAuth } from '../context/useAuth'
-import siteLogo from '../assets/logo.png'
-import './publicHeader.css'
+import { Link } from 'react-router-dom'
+import { useMemo } from 'react'
 
-
-
-const BRAND_NAME = '\u062F\u0628\u0633\u062A\u0627\u0646'
-const DEFAULT_BRAND_TAG = '\u0641\u0631\u0647\u0646\u06AB\u064A \u0645\u0631\u06A9\u0632'
-const BACK_TO_LIST = '\u0628\u06D0\u0631\u062A\u0647 \u0644\u06CC\u0633\u062A \u062A\u0647'
 const ALL_LABEL = '\u067C\u0648\u0644'
 const BOOKS_LABEL = '\u06A9\u062A\u0627\u0628\u0648\u0646\u0647'
 const ALL_BOOKS_LABEL = '\u067C\u0648\u0644 \u06A9\u062A\u0627\u0628\u0648\u0646\u0647'
@@ -127,81 +118,137 @@ const MENU_ICON_STYLE_MAP = {
     '--menu-icon-to': '#fecdd3',
     '--menu-icon-fg': '#be123c',
   },
-  '\u0633\u06CC\u0631\u062A \u0627\u0644\u0646\u0628\u064A \u06A9\u0627\u0646\u0641\u0631\u0627\u0646\u0633': {
-    '--menu-icon-from': '#e0f2fe',
-    '--menu-icon-to': '#bae6fd',
-    '--menu-icon-fg': '#075985',
-  },
-  '\u0627\u062F\u0628\u064A \u06A9\u0627\u0646\u0641\u0631\u0627\u0646\u0633': {
-    '--menu-icon-from': '#f5d0fe',
-    '--menu-icon-to': '#f0abfc',
-    '--menu-icon-fg': '#a21caf',
-  },
-  '\u0639\u0644\u0645\u06CC \u06A9\u0646\u0641\u0631\u0627\u0646\u0633': {
-    '--menu-icon-from': '#dcfce7',
-    '--menu-icon-to': '#bbf7d0',
-    '--menu-icon-fg': '#15803d',
-  },
-  '\u0641\u0631\u0647\u0646\u06AB\u064A \u06A9\u0646\u0641\u0631\u0627\u0646\u0633': {
-    '--menu-icon-from': '#fde68a',
-    '--menu-icon-to': '#fcd34d',
-    '--menu-icon-fg': '#b45309',
-  },
 }
 
+for (const item of CONFERENCE_MENU) {
+  MENU_ICON_STYLE_MAP[item.label] = MENU_ICON_STYLE_MAP[CONFERENCES_LABEL]
+}
 
-export default function PublicHeader({
-  searchValue = '',
-  onSearchChange,
-}) {
-  const { status: authStatus } = useAuth()
-  const isAdmin = authStatus === 'authed'
+function renderSidebarIcon(label) {
+  const Icon = MENU_ICON_MAP[label] ?? CircleDot
+  const iconStyle = MENU_ICON_STYLE_MAP[label] ?? null
+  
+  return (
+    <span className="sidebar-icon" style={iconStyle}>
+      <Icon size={16} strokeWidth={2.2} />
+    </span>
+  )
+}
 
-    return (
-    <header className="public-header">
-      <div className="public-container public-header-inner">
+function buildLink(slug, searchValue) {
+  const params = new URLSearchParams()
+  if (searchValue) params.set('q', searchValue)
+  if (slug) params.set('category', slug)
+  const query = params.toString()
+  return `/${query ? `?${query}` : ''}`
+}
 
-        {/* RIGHT SIDE: Logo & Brand */}
-<div className="public-header-side right">
-  <Link to="/" className="public-brand-card">
-    <img className="public-brand-logo" src={siteLogo} alt={BRAND_NAME} />
-    <span className="public-brand-mark">{BRAND_NAME}</span>
-  </Link>
-</div>
+export default function CategoryMenu({ categories = [], activeCategory = '', searchValue = '' }) {
+  const { mainItems, books, bookItems, conferenceItems, otherItems, moreItems } = useMemo(() => {
+    const visibleCategories = categories.filter(
+      (cat) => !HIDDEN_MENU_NAMES.has(cat.name) && !HIDDEN_MENU_SLUGS.has(cat.slug)
+    )
+    const byName = new Map(visibleCategories.map((cat) => [cat.name, cat]))
+    const main = MAIN_MENU_ORDER.map((name) => byName.get(name)).filter(Boolean)
+    const booksCategory = byName.get(BOOKS_LABEL)
+    const booksChildren = BOOK_CHILDREN.map((name) => byName.get(name)).filter(Boolean)
+    const conferenceNames = new Set(CONFERENCE_MENU.flatMap((item) => item.names))
+    const usedNames = new Set([...MAIN_MENU_ORDER, ...BOOK_CHILDREN, ...conferenceNames, CONFERENCES_LABEL])
+    const extra = visibleCategories.filter((cat) => !usedNames.has(cat.name))
+    const conferenceItems = CONFERENCE_MENU.map((item) => {
+      const found = item.names.map((name) => byName.get(name)).find(Boolean)
+      return found ? { ...found, name: item.label } : { id: item.slug, slug: item.slug, name: item.label }
+    })
 
-        {/* CENTER: Search Bar */}
-        <div className="public-header-center">
-          <div className="header-search-box">
-            <Search size={18} className="search-icon" />
-            <input
-              type="search"
-              placeholder={'\u0644\u067C\u0648\u0646...'}
-              value={searchValue}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-            />
-          </div>
-        </div>
+    return {
+      mainItems: main.filter((entry) => entry.name !== BOOKS_LABEL),
+      books: booksCategory ?? null,
+      bookItems: booksChildren,
+      conferenceItems,
+      otherItems: extra,
+    }
+  }, [categories])
 
-        {/* LEFT SIDE: Auth & Gallery */}
-        <div className="public-header-side left">
-          <Link className="header-icon-btn" to="/gallery" title="Gallery">
-            <ImageIcon size={20} />
+  const conferenceSlugs = useMemo(() => new Set(conferenceItems.map((item) => item.slug)), [conferenceItems])
+  const isConferencesActive = conferenceSlugs.has(activeCategory)
+  const bookSlugs = useMemo(() => new Set(bookItems.map((item) => item.slug)), [bookItems])
+  const isBooksActive = (books && activeCategory === books.slug) || bookSlugs.has(activeCategory)
+
+  return (
+    <nav className="sidebar-nav">
+      <section className="sidebar-section">
+        <Link className={`sidebar-link${!activeCategory ? ' active' : ''}`} to={buildLink('', searchValue)}>
+          {renderSidebarIcon(ALL_LABEL)}
+          <span>{ALL_LABEL}</span>
+        </Link>
+      </section>
+
+      <section className="sidebar-section">
+        <h4 className="sidebar-title">{'\u0628\u0627\u0628\u0648\u0646\u0647'}</h4>
+        {mainItems.map((item) => (
+          <Link
+            key={item.id}
+            className={`sidebar-link${activeCategory === item.slug ? ' active' : ''}`}
+            to={buildLink(item.slug, searchValue)}
+          >
+            {renderSidebarIcon(item.name)}
+            <span>{item.name}</span>
           </Link>
+        ))}
+      </section>
 
-          {isAdmin ? (
-            <Link className="btn-header-auth dashboard" to="/dashboard">
-              <LayoutDashboard size={18} />
-              <span>Dashboard</span>
-            </Link>
-          ) : (
-            <Link className="btn-header-auth login" to="/login">
-              <LogIn size={18} />
-              <span>Login</span>
-            </Link>
-          )}
-        </div>
+      <section className="sidebar-section">
+        <h4 className="sidebar-title">{CONFERENCES_LABEL}</h4>
+        {conferenceItems.map((item) => (
+          <Link
+            key={item.id ?? item.slug}
+            className={`sidebar-link${activeCategory === item.slug ? ' active' : ''}`}
+            to={buildLink(item.slug, searchValue)}
+          >
+            {renderSidebarIcon(item.name)}
+            <span>{item.name}</span>
+          </Link>
+        ))}
+      </section>
 
-      </div>
-    </header>
+      {books ? (
+        <section className="sidebar-section">
+          <h4 className="sidebar-title">{BOOKS_LABEL}</h4>
+          <Link
+            className={`sidebar-link${activeCategory === books.slug ? ' active' : ''}`}
+            to={buildLink(books.slug, searchValue)}
+          >
+            {renderSidebarIcon(ALL_BOOKS_LABEL)}
+            <span>{ALL_BOOKS_LABEL}</span>
+          </Link>
+          {bookItems.map((item) => (
+            <Link
+              key={item.id}
+              className={`sidebar-link${activeCategory === item.slug ? ' active' : ''}`}
+              to={buildLink(item.slug, searchValue)}
+            >
+              {renderSidebarIcon(item.name)}
+              <span>{item.name}</span>
+            </Link>
+          ))}
+        </section>
+      ) : null}
+
+      {otherItems.length > 0 && (
+        <section className="sidebar-section">
+          <h4 className="sidebar-title">{MORE_LABEL}</h4>
+          {otherItems.map((item) => (
+            <Link
+              key={item.id}
+              className={`sidebar-link${activeCategory === item.slug ? ' active' : ''}`}
+              to={buildLink(item.slug, searchValue)}
+            >
+              {renderSidebarIcon(item.name)}
+              <span>{item.name}</span>
+            </Link>
+          ))}
+        </section>
+      )}
+    </nav>
   )
 }

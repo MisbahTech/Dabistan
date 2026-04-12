@@ -1,10 +1,11 @@
-import { useState } from 'react'
 import {
   useCategoriesQuery,
   useCreateCategoryMutation,
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
 } from '../services/categoriesApi'
+import { useAuth } from '../context/useAuth'
+import { useState } from 'react'
 
 const emptyForm = { name: '', slug: '', description: '' }
 
@@ -27,6 +28,8 @@ const defaultCategories = [
 ]
 
 export default function CategoriesPage() {
+  const { user } = useAuth()
+  const userRole = user?.role?.slug || user?.role
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
   const [error, setError] = useState('')
@@ -127,11 +130,12 @@ export default function CategoriesPage() {
             <p className="muted">Create categories for posts and media.</p>
           </div>
           <div className="actions">
-            {!editingId ? (
+            {userRole !== 'author' && !editingId ? (
               <button className="btn ghost" type="button" onClick={handleAddDefaults}>
                 Add Default Categories
               </button>
-            ) : (
+            ) : null}
+            {editingId && (
               <button
                 className="btn ghost"
                 type="button"
@@ -206,13 +210,17 @@ export default function CategoriesPage() {
                 <span>{item.name}</span>
                 <span>{item.slug}</span>
                 <span>{item.description || '-'}</span>
-                <div className="actions">
-                  <button className="btn ghost" type="button" onClick={() => handleEdit(item)} disabled={!categoryId}>
-                    Edit
-                  </button>
-                  <button className="btn danger" type="button" onClick={() => handleDelete(categoryId)} disabled={!categoryId}>
-                    Delete
-                  </button>
+                 <div className="actions">
+                  {userRole !== 'author' && (
+                    <>
+                      <button className="btn ghost" type="button" onClick={() => handleEdit(item)} disabled={!categoryId}>
+                        Edit
+                      </button>
+                      <button className="btn danger" type="button" onClick={() => handleDelete(categoryId)} disabled={!categoryId}>
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             )
