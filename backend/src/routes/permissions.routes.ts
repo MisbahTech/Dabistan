@@ -1,12 +1,12 @@
 import { Router } from 'express'
 import * as permissionsController from '../controllers/permissions.controller.js'
-import { requireAuth, requireRole } from '../middlewares/auth.middleware.js'
+import { requireAuth, requirePermission } from '../middlewares/auth.middleware.js'
 
 const router = Router()
 
-// All permission routes require authentication and admin role
+// All permission routes require authentication and specific permission
 router.use(requireAuth)
-router.use(requireRole(['admin']))
+router.use(requirePermission('permissions.manage'))
 
 router.get('/', permissionsController.listPermissions)
 router.get('/:id', permissionsController.getPermission)

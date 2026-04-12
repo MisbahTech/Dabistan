@@ -1,11 +1,11 @@
 import { Router } from 'express'
 import { createMostRead, deleteMostRead, listMostRead, updateMostRead } from '../controllers/mostRead.controller.js'
-import { requireAuth, requireRole } from '../middlewares/auth.middleware.js'
+import { requireAuth, requirePermission } from '../middlewares/auth.middleware.js'
 
 export const mostReadRouter = Router()
 
 mostReadRouter.use(requireAuth)
-mostReadRouter.use(requireRole(['admin', 'editor']))
+mostReadRouter.use(requirePermission('media.manage'))
 
 mostReadRouter.get('/', listMostRead)
 mostReadRouter.post('/', createMostRead)

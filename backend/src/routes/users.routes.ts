@@ -1,11 +1,11 @@
-﻿import { Router } from 'express'
+import { Router } from 'express'
 import { createUser, deleteUser, listUsers, updateUser, updateUserPassword } from '../controllers/users.controller.js'
-import { requireAuth, requireRole } from '../middlewares/auth.middleware.js'
+import { requireAuth, requirePermission } from '../middlewares/auth.middleware.js'
 
 export const usersRouter = Router()
 
 usersRouter.use(requireAuth)
-usersRouter.use(requireRole(['admin']))
+usersRouter.use(requirePermission('users.manage'))
 
 usersRouter.get('/', listUsers)
 usersRouter.post('/', createUser)

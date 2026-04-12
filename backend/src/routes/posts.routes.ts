@@ -1,11 +1,11 @@
 import { Router } from 'express'
 import { createPost, deletePost, getPost, listPosts, updatePost } from '../controllers/posts.controller.js'
-import { requireAuth, requireRole } from '../middlewares/auth.middleware.js'
+import { requireAuth, requirePermission } from '../middlewares/auth.middleware.js'
 
 export const postsRouter = Router()
 
 postsRouter.use(requireAuth)
-postsRouter.use(requireRole(['admin', 'editor']))
+postsRouter.use(requirePermission('posts.manage'))
 
 postsRouter.get('/', listPosts)
 postsRouter.get('/:id', getPost)

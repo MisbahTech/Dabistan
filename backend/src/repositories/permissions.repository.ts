@@ -82,6 +82,9 @@ export async function ensureDefaultPermissions(): Promise<void> {
     { name: 'Manage Users', slug: 'users.manage', description: 'Manage admin and editor accounts' },
     { name: 'Manage Roles', slug: 'roles.manage', description: 'Manage system roles' },
     { name: 'Manage Permissions', slug: 'permissions.manage', description: 'Manage system permissions' },
+    { name: 'Manage Videos', slug: 'videos.manage', description: 'Manage video content' },
+    { name: 'Manage Weather', slug: 'weather.manage', description: 'Manage weather data' },
+    { name: 'Manage Media', slug: 'media.manage', description: 'Manage uploads and exchange rates' },
   ]
 
   for (const p of defaults) {
