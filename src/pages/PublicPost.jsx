@@ -1,4 +1,4 @@
-﻿import { useMemo } from 'react'
+import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import PublicFooter from '../components/PublicFooter'
 import PublicHeader from '../components/PublicHeader'
@@ -54,14 +54,8 @@ export default function PublicPost() {
       <PublicHeader categories={categories} activeCategory={post?.category ?? ''} showBackLink />
 
       <main className="public-main">
-        <section className="public-content public-container">
-          <section className="public-hero compact">
-            <div>
-              <h1>{post?.title || '-'}</h1>
-              <p className="public-subtitle">{meta || PASHTO_NO_INFO}</p>
-            </div>
-          </section>
 
+        <section className="public-content public-container">
           {postQuery.isLoading ? <div className="muted">{PASHTO_LOADING}</div> : null}
           {error ? <div className="alert error">{error}</div> : null}
 
@@ -71,9 +65,11 @@ export default function PublicPost() {
                 <img className="post-cover detail" src={resolveMediaUrl(getPostImage(post))} alt={post.title} />
               ) : null}
               <div className="post-body">
-                {post.category ? <span className="tag">{categoryLabel(post.category)}</span> : null}
-                <h2 className="post-title">{post.title}</h2>
-                {meta ? <p className="post-meta">{meta}</p> : null}
+                <div className="post-meta">
+                  {post.category ? <span className="tag">{categoryLabel(post.category)}</span> : null}
+                  {meta ? <span>{meta}</span> : null}
+                </div>
+                <h1 className="post-title">{post.title}</h1>
                 <div className="post-content">{post.content}</div>
                 {galleryImages.length > 1 ? (
                   <div className="post-gallery">

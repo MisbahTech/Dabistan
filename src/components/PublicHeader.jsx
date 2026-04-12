@@ -1,4 +1,4 @@
-﻿import {
+import {
   BookOpen,
   Bookmark,
   CircleDot,
@@ -210,23 +210,21 @@ export default function PublicHeader({
     <>
       <header className="public-header">
         <div className="public-container public-header-inner">
-          <div className={`public-brand${hasActions ? ' has-actions' : ''}`}>
+          <Link to="/" className="public-brand">
             <img src={siteLogo} alt={BRAND_NAME} />
             <div className="public-brand-text">
               <span className="public-brand-mark">{BRAND_NAME}</span>
               <span className="public-brand-tag">{brandTag}</span>
             </div>
-          </div>
+          </Link>
 
-          {hasActions ? (
-            <div className="public-nav-actions">
-              {showBackLink ? (
-                <Link className="btn ghost" to="/">
-                  {BACK_TO_LIST}
-                </Link>
-              ) : null}
-            </div>
-          ) : null}
+          <div className="public-nav-actions">
+            {showBackLink ? (
+              <Link className="btn ghost" to="/">
+                {BACK_TO_LIST}
+              </Link>
+            ) : null}
+          </div>
         </div>
       </header>
 

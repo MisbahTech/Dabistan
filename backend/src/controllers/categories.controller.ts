@@ -1,34 +1,24 @@
 import { Request, Response, NextFunction } from 'express'
-import { isValidObjectId } from 'mongoose'
-import { Category } from '../models/Category.js'
+import { categoriesService } from '../services/categories.service.js'
 import { createHttpError, requireFields } from '../utils/http.js'
 import { slugify } from '../utils/slugify.js'
 
-async function findCategoryByIdentifier(rawIdentifier: string) {
-  const identifier = (rawIdentifier ?? '').trim()
-  if (!identifier || identifier === 'undefined' || identifier === 'null') {
-    throw createHttpError(400, 'Invalid category identifier')
-  }
-
-  if (isValidObjectId(identifier)) {
-    const byObjectId = await Category.findById(identifier)
-    if (byObjectId) return byObjectId
-  }
+async function getCategoryFromParams(req: Request) {
+  const identifier = req.params.id as string
+  if (!identifier) return null
 
   const numeric = Number(identifier)
   if (!Number.isNaN(numeric) && Number.isFinite(numeric)) {
-    const byNumericId = await Category.findOne({ id: numeric })
-    if (byNumericId) return byNumericId
+    return categoriesService.getById(numeric)
   }
 
-  return Category.findOne({ slug: identifier })
+  return categoriesService.getBySlug(identifier)
 }
 
 export async function listCategories(req: Request, res: Response, next: NextFunction) {
   try {
     const q = ((req.query.q as string) ?? '').trim()
-    const filter = q ? { $or: [{ name: new RegExp(q, 'i') }, { slug: new RegExp(q, 'i') }] } : {}
-    const categories = await Category.find(filter).sort({ name: 1 })
+    const categories = await categoriesService.list({ q })
     res.json(categories)
   } catch (error) {
     next(error)
@@ -37,7 +27,7 @@ export async function listCategories(req: Request, res: Response, next: NextFunc
 
 export async function listPublicCategories(_req: Request, res: Response, next: NextFunction) {
   try {
-    const categories = await Category.find({}).sort({ name: 1 })
+    const categories = await categoriesService.list()
     res.json(categories)
   } catch (error) {
     next(error)
@@ -49,12 +39,12 @@ export async function createCategory(req: Request, res: Response, next: NextFunc
     const { name, slug, description } = (req.body ?? {}) as any
     requireFields({ name }, ['name'])
     const finalSlug = slug ? slugify(slug) : slugify(name)
-    const existing = await Category.findOne({ slug: finalSlug })
+    const existing = await categoriesService.getBySlug(finalSlug)
     if (existing) {
       throw createHttpError(409, 'Slug already exists')
     }
 
-    const category = await Category.create({
+    const category = await categoriesService.create({
       name,
       slug: finalSlug,
       description: description ?? '',
@@ -70,25 +60,26 @@ export async function updateCategory(req: Request, res: Response, next: NextFunc
     const { name, slug, description } = (req.body ?? {}) as any
     requireFields({ name }, ['name'])
 
-    const category = await findCategoryByIdentifier(req.params.id as string)
+    const category = await getCategoryFromParams(req)
     if (!category) {
       throw createHttpError(404, 'Category not found')
     }
 
     const finalSlug = slug ? slugify(slug) : slugify(name)
     if (finalSlug !== category.slug) {
-      const existing = await Category.findOne({ slug: finalSlug })
+      const existing = await categoriesService.getBySlug(finalSlug)
       if (existing) {
         throw createHttpError(409, 'Slug already exists')
       }
     }
 
-    category.name = name
-    category.slug = finalSlug
-    category.description = description ?? ''
-    await category.save()
+    const updated = await categoriesService.update(category.id, {
+      name,
+      slug: finalSlug,
+      description: description ?? '',
+    })
 
-    res.json(category)
+    res.json(updated)
   } catch (error) {
     next(error)
   }
@@ -96,11 +87,11 @@ export async function updateCategory(req: Request, res: Response, next: NextFunc
 
 export async function deleteCategory(req: Request, res: Response, next: NextFunction) {
   try {
-    const category = await findCategoryByIdentifier(req.params.id as string)
+    const category = await getCategoryFromParams(req)
     if (!category) {
       throw createHttpError(404, 'Category not found')
     }
-    await category.deleteOne()
+    await categoriesService.remove(category.id)
     res.status(204).send()
   } catch (error) {
     next(error)

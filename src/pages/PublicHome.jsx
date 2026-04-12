@@ -103,30 +103,19 @@ export default function PublicHome() {
               <p className="public-showcase-text">{PASHTO_SHOWCASE_TEXT}</p>
             </div>
 
-            <div className="public-tools public-tools-rich">
+            <div className="public-tools-rich">
               <label className="public-search-card">
-                <span className="public-search-label">
-                  <Search size={16} />
-                  <span>{PASHTO_SEARCH_PLACEHOLDER}</span>
-                </span>
+                <Search size={18} className="muted" />
                 <input
                   type="search"
-                  placeholder={` ${PASHTO_SEARCH_PLACEHOLDER}`}
+                  placeholder={PASHTO_SEARCH_PLACEHOLDER}
                   value={search}
                   onChange={(event) => handleSearchChange(event.target.value)}
                 />
               </label>
               <Link className="public-tool-card" to="/gallery">
-                <span className="public-search-label">
-                  <span>{PASHTO_GALLERY}</span>
-                </span>
+                <span>{PASHTO_GALLERY}</span>
               </Link>
-              {selectedCategory ? (
-                <div className="public-search-note">
-                  <Compass size={16} />
-                  <span>{activeCategoryLabel}</span>
-                </div>
-              ) : null}
             </div>
           </section>
 
@@ -156,13 +145,15 @@ export default function PublicHome() {
                 </h2>
                 <p className="post-excerpt">{featured.excerpt || PASHTO_EXCERPT_FALLBACK}</p>
                 <div className="post-footer">
-                  <Link className="btn primary" to={`/post/${featured.slug}`}>
-                    {PASHTO_READ_MORE}
+                  <Link className="link link-more" to={`/post/${featured.slug}`}>
+                    {PASHTO_READ_MORE} →
                   </Link>
                 </div>
               </div>
               {getPostImage(featured) ? (
-                <img className="post-cover" src={resolveMediaUrl(getPostImage(featured))} alt={featured.title} />
+                <Link className="post-cover-link" to={`/post/${featured.slug}`}>
+                  <img className="post-cover" src={resolveMediaUrl(getPostImage(featured))} alt={featured.title} />
+                </Link>
               ) : null}
             </article>
           ) : null}
@@ -171,17 +162,17 @@ export default function PublicHome() {
             <div className="public-grid">
               {rest.map((post, index) => {
                 const image = getPostImage(post)
-                const cycle = index % 6
-                const variantClass =
-                  cycle === 0 ? ' post-card-featured' : cycle === 3 ? ' post-card-featured post-card-featured-reverse' : ''
-
                 return (
                   <article
                     key={post.id}
-                    className={`post-card${variantClass}${image ? ' has-media' : ' no-media'}`}
-                    style={{ '--delay': `${index * 80}ms` }}
+                    className="post-card"
+                    style={{ '--delay': `${index * 50}ms` }}
                   >
-                    {image ? <img className="post-cover" src={resolveMediaUrl(image)} alt={post.title} /> : null}
+                    {image ? (
+                      <Link to={`/post/${post.slug}`}>
+                        <img className="post-cover" src={resolveMediaUrl(image)} alt={post.title} />
+                      </Link>
+                    ) : null}
                     <div className="post-body">
                       <div className="post-meta">
                         {post.category ? <span className="tag">{categoryLabel(post.category)}</span> : null}
@@ -191,11 +182,6 @@ export default function PublicHome() {
                         <Link to={`/post/${post.slug}`}>{post.title}</Link>
                       </h2>
                       <p className="post-excerpt">{post.excerpt || PASHTO_EXCERPT_FALLBACK}</p>
-                      <div className="post-footer">
-                        <Link className="btn primary" to={`/post/${post.slug}`}>
-                          {PASHTO_READ_MORE}
-                        </Link>
-                      </div>
                     </div>
                   </article>
                 )
