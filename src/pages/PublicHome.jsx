@@ -1,4 +1,5 @@
-import { Compass, Search } from 'lucide-react'
+import { Compass, Search, ArrowLeft, Image as ImageIcon } from 'lucide-react'
+import heroAsset from '../assets/hero-asset.png'
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import PublicFooter from '../components/PublicFooter'
@@ -96,28 +97,51 @@ export default function PublicHome() {
       />
 
       <main className="public-main">
-        <section className="public-content public-container">
-          <section className="public-showcase">
-            <div className="public-showcase-copy">
+        {/* 
+          Premium Hero Section 
+          Feature: Full-bleed gradient background with 3D cinematic assets.
+          RTL Note: hero-content displays on the right, hero-visual on the left.
+        */}
+        <section className="premium-hero">
+          <div className="hero-bg-accent" />
+          <div className="hero-bottom-fade" />
+          <div className="public-container premium-hero-inner">
+            <div className="hero-content">
               <h1>{PASHTO_SHOWCASE_TITLE}</h1>
-              <p className="public-showcase-text">{PASHTO_SHOWCASE_TEXT}</p>
-            </div>
+              <p className="hero-subtitle">{PASHTO_SHOWCASE_TEXT}</p>
 
-            <div className="public-tools-rich">
-              <label className="public-search-card">
-                <Search size={18} className="muted" />
+              <div className="premium-search-container">
+                <Search size={22} className="muted" />
                 <input
                   type="search"
                   placeholder={PASHTO_SEARCH_PLACEHOLDER}
                   value={search}
                   onChange={(event) => handleSearchChange(event.target.value)}
                 />
-              </label>
-              <Link className="public-tool-card" to="/gallery">
-                <span>{PASHTO_GALLERY}</span>
-              </Link>
+              </div>
+
+              <div className="hero-actions">
+                <Link className="premium-btn premium-btn-primary" to="/gallery">
+                  <ImageIcon size={20} />
+                  <span>{PASHTO_GALLERY}</span>
+                </Link>
+                <button 
+                  className="premium-btn premium-btn-outline"
+                  onClick={() => document.getElementById('featured-post')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  <Compass size={20} />
+                  <span>{PASHTO_READ_MORE}</span>
+                </button>
+              </div>
             </div>
-          </section>
+
+            <div className="hero-visual">
+              <img src={heroAsset} alt="Dabistan Hero" className="hero-asset" />
+            </div>
+          </div>
+        </section>
+
+        <section className="public-content public-container">
 
           {error ? <div className="alert error">{error}</div> : null}
           {isLoading ? <div className="muted">{PASHTO_LOADING}</div> : null}
@@ -134,7 +158,7 @@ export default function PublicHome() {
           ) : null}
 
           {featured ? (
-            <article className={`post-featured${getPostImage(featured) ? '' : ' no-media'}`}>
+            <article id="featured-post" className={`post-featured${getPostImage(featured) ? '' : ' no-media'}`}>
               <div className="post-featured-body">
                 <div className="post-meta">
                   {featured.category ? <span className="tag">{categoryLabel(featured.category)}</span> : null}

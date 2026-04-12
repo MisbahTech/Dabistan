@@ -10,8 +10,8 @@ import {
   PenSquare,
   Presentation,
 } from 'lucide-react'
-import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import { useState, useEffect, useMemo} from 'react'
 import siteLogo from '../assets/logo.png'
 
 const BRAND_NAME = '\u062F\u0628\u0633\u062A\u0627\u0646'
@@ -174,6 +174,21 @@ export default function PublicHeader({
   brandTag = DEFAULT_BRAND_TAG,
   showBackLink = false,
 }) {
+  const [isScrolled, setIsScrolled] = useState(false)
+  const location = useLocation()
+  
+  // High-level check for the Home page to enable transparency
+  const isHome = location.pathname === '/'
+
+  // Track scroll position to toggle header transparency
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   const hasActions = showBackLink
 
   const { mainItems, books, bookItems, conferenceItems, otherItems } = useMemo(() => {
@@ -208,22 +223,26 @@ export default function PublicHeader({
 
   return (
     <>
-      <header className="public-header">
+      <header className={`public-header ${isHome && !isScrolled ? 'is-transparent' : 'is-solid'}`}>
         <div className="public-container public-header-inner">
-          <Link to="/" className="public-brand">
-            <img src={siteLogo} alt={BRAND_NAME} />
+          <div className="public-header-side left">
+            {showBackLink ? (
+              <Link className="btn-back" to="/">
+                {BACK_TO_LIST}
+              </Link>
+            ) : null}
+          </div>
+
+          <Link to="/" className="public-brand-card">
+            <img className="public-brand-logo" src={siteLogo} alt={BRAND_NAME} />
             <div className="public-brand-text">
               <span className="public-brand-mark">{BRAND_NAME}</span>
               <span className="public-brand-tag">{brandTag}</span>
             </div>
           </Link>
 
-          <div className="public-nav-actions">
-            {showBackLink ? (
-              <Link className="btn ghost" to="/">
-                {BACK_TO_LIST}
-              </Link>
-            ) : null}
+          <div className="public-header-side right">
+            {/* Reserved for future actions like search icon toggle etc */}
           </div>
         </div>
       </header>
