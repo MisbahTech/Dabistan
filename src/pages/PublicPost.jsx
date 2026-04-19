@@ -8,7 +8,6 @@ import { getPostAttachment, getPostGallery, getPostImage, resolveMediaUrl } from
 
 const EMPTY_LIST = []
 
-const PASHTO_NO_INFO = '\u0646\u0648\u0631 \u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0646\u0634\u062A\u0647'
 const PASHTO_LOADING = '\u0644\u06CC\u06A9\u0646\u0647 \u0644\u0648\u0689\u06D0\u0696\u064A...'
 const PASHTO_ATTACHMENT = '\u0636\u0645\u06CC\u0645\u0647:'
 const PASHTO_NO_FILE_NAME = '\u062F \u0641\u0627\u06CC\u0644 \u0646\u0648\u0645 \u0646\u0634\u062A\u0647'
@@ -55,26 +54,21 @@ export default function PublicPost() {
 
       <main className="public-main">
         <section className="public-content public-container">
-          <section className="public-hero compact">
-            <div>
-              <h1>{post?.title || '-'}</h1>
-              <p className="public-subtitle">{meta || PASHTO_NO_INFO}</p>
-            </div>
-          </section>
-
           {postQuery.isLoading ? <div className="muted">{PASHTO_LOADING}</div> : null}
           {error ? <div className="alert error">{error}</div> : null}
 
           {post ? (
             <article className="post-detail">
-              {getPostImage(post) ? (
-                <img className="post-cover detail" src={resolveMediaUrl(getPostImage(post))} alt={post.title} />
-              ) : null}
               <div className="post-body">
-                <div className="post-headline-pill">
-                  {post.category ? <span className="tag">{categoryLabel(post.category)}</span> : null}
-                  <h2 className="post-title">{post.title}</h2>
-                  {meta ? <p className="post-meta">{meta}</p> : null}
+                <div className="post-top-pill">
+                  {getPostImage(post) ? (
+                    <img className="post-cover detail" src={resolveMediaUrl(getPostImage(post))} alt={post.title} />
+                  ) : null}
+                  <div className="post-headline-pill">
+                    {post.category ? <span className="tag">{categoryLabel(post.category)}</span> : null}
+                    <h2 className="post-title">{post.title}</h2>
+                    {meta ? <p className="post-meta">{meta}</p> : null}
+                  </div>
                 </div>
                 <div className="post-content">{post.content?.trimStart()}</div>
                 {galleryImages.length > 1 ? (
