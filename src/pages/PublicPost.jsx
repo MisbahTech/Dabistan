@@ -71,10 +71,12 @@ export default function PublicPost() {
                 <img className="post-cover detail" src={resolveMediaUrl(getPostImage(post))} alt={post.title} />
               ) : null}
               <div className="post-body">
-                {post.category ? <span className="tag">{categoryLabel(post.category)}</span> : null}
-                <h2 className="post-title">{post.title}</h2>
-                {meta ? <p className="post-meta">{meta}</p> : null}
-                <div className="post-content">{post.content}</div>
+                <div className="post-headline-pill">
+                  {post.category ? <span className="tag">{categoryLabel(post.category)}</span> : null}
+                  <h2 className="post-title">{post.title}</h2>
+                  {meta ? <p className="post-meta">{meta}</p> : null}
+                </div>
+                <div className="post-content">{post.content?.trimStart()}</div>
                 {galleryImages.length > 1 ? (
                   <div className="post-gallery">
                     {galleryImages.map((imageUrl) => (
