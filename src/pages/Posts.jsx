@@ -77,11 +77,16 @@ export default function PostsPage() {
   const posts = postsQuery.data ?? []
   const categories = categoriesQuery.data ?? []
   const isLoading = postsQuery.isLoading
+  const isUploading = uploadMutation.isPending || Boolean(uploadingField)
   const isSaving = createPost.isPending || updatePost.isPending || deletePost.isPending
   const listError = postsQuery.error?.message || categoriesQuery.error?.message || ''
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    if (isUploading) {
+      setError('Please wait for uploads to finish.')
+      return
+    }
     setError('')
     try {
       const fallbackAuthor = user?.email || user?.name || 'admin'
@@ -368,9 +373,9 @@ export default function PostsPage() {
             ) : null}
           </div>
           {error ? <div className="alert error full">{error}</div> : null}
-          <button className="btn primary" type="submit" disabled={isSaving}>
-            {isSaving ? 'Saving...' : editingId ? 'Update Post' : 'Create Post'}
-          </button>
+           <button className="btn primary" type="submit" disabled={isSaving || isUploading}>
+             {isUploading ? 'Uploading...' : isSaving ? 'Saving...' : editingId ? 'Update Post' : 'Create Post'}
+           </button>
         </form>
       </div>
 

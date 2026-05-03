@@ -43,6 +43,22 @@ function normalizeAttachment(attachment?: Partial<IPostAttachment> | null): IPos
   }
 }
 
+function resolvePublishedAt(
+  status: 'draft' | 'published',
+  publishedAt?: Date | string | null,
+  currentPublishedAt?: Date | string | null
+): Date | string | null {
+  if (publishedAt !== undefined) {
+    return publishedAt || null
+  }
+
+  if (status === 'published') {
+    return currentPublishedAt || new Date()
+  }
+
+  return null
+}
+
 function resolvePostFilter(identifier: PostIdentifier): Record<string, unknown> | null {
   if (typeof identifier === 'number' && Number.isFinite(identifier)) {
     return { id: identifier }
@@ -151,6 +167,7 @@ export async function createPost({
   const id = await getNextId('posts')
   const normalizedGallery = normalizeGallery(image, gallery)
   const primaryImage = normalizeString(image) || normalizedGallery[0] || ''
+  const resolvedStatus = status || 'draft'
   const post = await Post.create({
     id,
     title,
@@ -161,9 +178,9 @@ export async function createPost({
     image: primaryImage,
     gallery: normalizedGallery,
     attachment: normalizeAttachment(attachment),
-    published_at,
+    published_at: resolvePublishedAt(resolvedStatus, published_at),
     author,
-    status: status || 'draft',
+    status: resolvedStatus,
     content,
   })
   return post.toJSON()
@@ -175,8 +192,15 @@ export async function updatePost(id: PostIdentifier, data: Partial<CreatePostDat
     return null
   }
 
+  const existingPost = await Post.findOne(filter).select('status published_at').lean()
+  if (!existingPost) {
+    return null
+  }
+
   const normalizedGallery = normalizeGallery(data.image, data.gallery)
   const primaryImage = normalizeString(data.image) || normalizedGallery[0] || ''
+  const resolvedStatus = data.status || existingPost.status || 'draft'
+  const resolvedPublishedAt = resolvePublishedAt(resolvedStatus, data.published_at, existingPost.published_at)
 
   return Post.findOneAndUpdate(
     filter,
@@ -187,6 +211,8 @@ export async function updatePost(id: PostIdentifier, data: Partial<CreatePostDat
         image: primaryImage,
         gallery: normalizedGallery,
         attachment: normalizeAttachment(data.attachment),
+        published_at: resolvedPublishedAt,
+        status: resolvedStatus,
       },
     },
     { new: true }

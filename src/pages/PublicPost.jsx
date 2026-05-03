@@ -9,9 +9,6 @@ import { getPostAttachment, getPostGallery, getPostImage, resolveMediaUrl } from
 const EMPTY_LIST = []
 
 const PASHTO_LOADING = '\u0644\u06CC\u06A9\u0646\u0647 \u0644\u0648\u0689\u06D0\u0696\u064A...'
-const PASHTO_ATTACHMENT = '\u0636\u0645\u06CC\u0645\u0647:'
-const PASHTO_NO_FILE_NAME = '\u062F \u0641\u0627\u06CC\u0644 \u0646\u0648\u0645 \u0646\u0634\u062A\u0647'
-
 function getPublishedAt(post) {
   return post?.publishedAt || post?.published_at || ''
 }
@@ -80,19 +77,13 @@ export default function PublicPost() {
                 ) : null}
                 {attachment?.url ? (
                   <div className="post-attachment">
-                    <span>{PASHTO_ATTACHMENT}</span>
-                    <div className="post-attachment-actions">
-                      <a className="link" href={resolveMediaUrl(attachment.url)} target="_blank" rel="noreferrer">
-                        {attachment.originalName || attachment.name || PASHTO_NO_FILE_NAME}
-                      </a>
-                      <a
-                        className="btn primary"
-                        href={resolveMediaUrl(attachment.url)}
-                        download={attachment.originalName || attachment.name || 'document.pdf'}
-                      >
-                        Download PDF
-                      </a>
-                    </div>
+                    <a
+                      className="btn primary"
+                      href={resolveMediaUrl(attachment.url)}
+                      download={attachment.originalName || attachment.name || 'document.pdf'}
+                    >
+                      Download PDF
+                    </a>
                   </div>
                 ) : null}
               </div>
