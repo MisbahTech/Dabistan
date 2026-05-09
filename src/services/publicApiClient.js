@@ -24,10 +24,18 @@ async function parseResponse(response) {
 }
 
 export async function getPublicJSON(path, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'GET',
-    ...options,
-  })
+  const url = `${API_BASE_URL}${path}`
+  let response
+
+  try {
+    response = await fetch(url, {
+      method: 'GET',
+      ...options,
+    })
+  } catch (error) {
+    console.error('Public API request failed', { url, method: 'GET', error })
+    throw new Error(`Unable to reach API: ${url}`)
+  }
 
   return parseResponse(response)
 }

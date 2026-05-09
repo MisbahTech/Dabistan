@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express'
-import cors from 'cors'
+import cors, { CorsOptions } from 'cors'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -16,13 +16,23 @@ const corsOrigins = env.corsOrigin
   ? env.corsOrigin.split(',').map((origin: string) => origin.trim()).filter(Boolean)
   : []
 
-// CORS controls which browser frontends may call this backend directly.
-// One origin stays a string; multiple origins stay an array so the cors package can validate them.
-app.use(
-  cors({
-    origin: corsOrigins.length > 1 ? corsOrigins : corsOrigins[0] ?? true,
-  })
-)
+const corsOptions: CorsOptions = {
+  origin(origin, callback) {
+    if (!origin || corsOrigins.length === 0 || corsOrigins.includes('*') || corsOrigins.includes(origin)) {
+      callback(null, true)
+      return
+    }
+
+    callback(new Error(`Not allowed by CORS: ${origin}`))
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 204,
+}
+
+app.use(cors(corsOptions))
+app.options('*', cors(corsOptions))
 app.use(loggerMiddleware)
 // JSON parsing is global because almost every write endpoint expects JSON bodies.
 // The size limit is a guardrail against accidentally large payloads.

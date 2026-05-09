@@ -38,13 +38,21 @@ function buildHeaders(extra = {}) {
 }
 
 async function requestJSON(path, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: buildHeaders({
-      'Content-Type': 'application/json',
-      ...(options.headers ?? {}),
-    }),
-    ...options,
-  })
+  const url = `${API_BASE_URL}${path}`
+  let response
+
+  try {
+    response = await fetch(url, {
+      headers: buildHeaders({
+        'Content-Type': 'application/json',
+        ...(options.headers ?? {}),
+      }),
+      ...options,
+    })
+  } catch (error) {
+    console.error('API request failed', { url, method: options.method ?? 'GET', error })
+    throw new Error(`Unable to reach API: ${url}`)
+  }
 
   return parseResponse(response)
 }
@@ -68,12 +76,19 @@ export function deleteJSON(path, options = {}) {
 export async function postFile(path, file) {
   const formData = new FormData()
   formData.append('file', file)
+  const url = `${API_BASE_URL}${path}`
+  let response
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'POST',
-    headers: buildHeaders(),
-    body: formData,
-  })
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: buildHeaders(),
+      body: formData,
+    })
+  } catch (error) {
+    console.error('API file upload failed', { url, method: 'POST', error })
+    throw new Error(`Unable to reach API: ${url}`)
+  }
 
   return parseResponse(response)
 }

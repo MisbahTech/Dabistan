@@ -43,13 +43,6 @@ export default function Gallery() {
 
       <main className="public-main">
         <section className="public-content public-container">
-          <section className="public-showcase compact">
-            <div className="public-showcase-copy">
-              <h1>Gallery</h1>
-              <p className="public-showcase-text">All uploaded post images appear here.</p>
-            </div>
-          </section>
-
           {error ? <div className="alert error">{error}</div> : null}
           {postsQuery.isLoading ? <div className="muted">Loading gallery...</div> : null}
           {!postsQuery.isLoading && images.length === 0 ? <div className="muted">No images yet.</div> : null}
